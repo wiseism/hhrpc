@@ -9,7 +9,7 @@ import java.util.Arrays;
 public class RpcRequest {
 
     private String serviceName;
-    private String methodName;
+    private String methodSign;
     private Object[] args;
 
     public String getServiceName() {
@@ -20,12 +20,12 @@ public class RpcRequest {
         this.serviceName = serviceName;
     }
 
-    public String getMethodName() {
-        return methodName;
+    public String getMethodSign() {
+        return methodSign;
     }
 
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
+    public void setMethodSign(String methodSign) {
+        this.methodSign = methodSign;
     }
 
     public Object[] getArgs() {
@@ -40,7 +40,7 @@ public class RpcRequest {
     public String toString() {
         return "RpcRequest{" +
                 "serviceName='" + serviceName + '\'' +
-                ", methodName='" + methodName + '\'' +
+                ", methodSign='" + methodSign + '\'' +
                 ", args=" + Arrays.toString(args) +
                 '}';
     }

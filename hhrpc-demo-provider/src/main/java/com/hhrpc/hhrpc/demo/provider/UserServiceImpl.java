@@ -19,7 +19,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findById(Integer uid, String name) {
+        return new User(uid, name);
+    }
+
+    @Override
     public Integer findIdNum(Integer uid) {
         return uid;
+    }
+
+    @Override
+    public long findLongId(long uid) {
+        return uid;
+    }
+
+    @Override
+    public User findUser(User user) {
+        return user;
     }
 }

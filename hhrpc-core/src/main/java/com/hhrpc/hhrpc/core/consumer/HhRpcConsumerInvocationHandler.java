@@ -4,11 +4,18 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hhrpc.hhrpc.core.api.RpcRequest;
 import com.hhrpc.hhrpc.core.api.RpcResponse;
+import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
+import com.hhrpc.hhrpc.core.utils.TypeUtils;
 import okhttp3.*;
+import org.springframework.context.annotation.TypeFilterUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,9 +34,11 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         RpcRequest request = new RpcRequest();
         request.setServiceName(serviceName);
         request.setArgs(args);
-        request.setMethodName(method.getName());
-
-        RpcResponse rpcResponse = getRpcResponse(request, method.getReturnType());
+        request.setMethodSign(HhrpcMethodUtils.createeMethodSign(method));
+        if (HhrpcMethodUtils.checkLocalMethod(method)){
+            return null;
+        }
+        RpcResponse rpcResponse = getRpcResponse(request, method.getReturnType(), method.getGenericReturnType());
         if (rpcResponse.getStatus()) {
             return rpcResponse.getData();
         }else {
@@ -49,7 +58,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
      * @param request
      * @return
      */
-    private RpcResponse getRpcResponse(RpcRequest request, Class<?> returnType) {
+    private RpcResponse getRpcResponse(RpcRequest request, Class<?> returnType, Type genericReturnType) {
         try {
             Gson gson = new Gson();
             String requestData = gson.toJson(request);
@@ -59,7 +68,26 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
                     .build()).execute();
             String responseData = response.body().string();
             // 反序列结果
-            TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, returnType);
+            Class<?> realClazz = TypeUtils.cast(returnType);
+            if (List.class.isAssignableFrom(realClazz)) {
+                if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                    TypeToken<?> listTypeToken = TypeToken.getParameterized(List.class, actualTypeArguments);
+                    TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, listTypeToken.getType());
+                    RpcResponse rpcResponse = gson.fromJson(responseData, parameterized.getType());
+                    return rpcResponse;
+                }
+            }
+            if (Map.class.isAssignableFrom(realClazz)) {
+                if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                    TypeToken<?> mapTypeToken = TypeToken.getParameterized(Map.class, actualTypeArguments);
+                    TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, mapTypeToken.getType());
+                    RpcResponse rpcResponse = gson.fromJson(responseData, parameterized.getType());
+                    return rpcResponse;
+                }
+            }
+            TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, realClazz);
             RpcResponse rpcResponse = gson.fromJson(responseData, parameterized.getType());
             return rpcResponse;
         }catch (Exception e) {
