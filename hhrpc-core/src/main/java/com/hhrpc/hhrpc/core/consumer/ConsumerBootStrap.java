@@ -1,9 +1,11 @@
 package com.hhrpc.hhrpc.core.consumer;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.hhrpc.hhrpc.core.annotation.HhRpcConsumer;
 import com.hhrpc.hhrpc.core.api.LoadBalance;
+import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.api.Router;
 import com.hhrpc.hhrpc.core.api.RpcContent;
 import org.springframework.beans.BeansException;
@@ -15,6 +17,7 @@ import org.springframework.core.env.Environment;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -33,9 +36,7 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
 
 
     public void screenConsumerServiceFields() throws IllegalAccessException {
-        String urls = environment.getProperty("hhrpc.providers");
-        List<String> providers = Lists.newArrayList(Splitter.on(",").trimResults()
-                .omitEmptyStrings().split(urls));
+        RegisterCenter registerCenter = applicationContext.getBean(RegisterCenter.class);
         Router router = applicationContext.getBean(Router.class);
         LoadBalance loadBalance = applicationContext.getBean(LoadBalance.class);
         RpcContent rpcContent = new RpcContent(router, loadBalance);
@@ -53,7 +54,7 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
                 if (proxyMap.containsKey(serviceName)) {
                     targetObj = proxyMap.get(serviceName);
                 } else {
-                    targetObj = createProxyObject(field.getType(), rpcContent, providers);
+                    targetObj = createProxyObject(field.getType(), rpcContent, registerCenter);
                     proxyMap.put(serviceName, targetObj);
                 }
                 field.setAccessible(true);
@@ -66,9 +67,21 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
      * 创建代理对象
      * @return
      */
-    private Object createProxyObject(Class<?> clazz, RpcContent rpcContent, List<String> providers) {
+    private Object createProxyObject(Class<?> clazz, RpcContent rpcContent, RegisterCenter registerCenter) {
+        String serviceName = clazz.getCanonicalName();
+        List<String> nodes = registerCenter.findAll(serviceName);
+        List<String> providers = createProviders(nodes);
+        registerCenter.subscribe(serviceName, (event)->{
+            providers.clear();
+            providers.addAll(createProviders(event.getData()));
+        });
         return Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz},
                 new HhRpcConsumerInvocationHandler(clazz.getCanonicalName(), rpcContent, providers));
+    }
+
+    private List<String> createProviders(List<String> nodes) {
+        return nodes.stream().map(node-> Strings.lenientFormat("http://%s", node.replace("_", ":")))
+                .collect(Collectors.toList());
     }
 
     /**

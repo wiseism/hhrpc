@@ -1,6 +1,9 @@
 package com.hhrpc.hhrpc.core.conf;
 
+import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.provider.ProviderBootStarp;
+import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,5 +17,17 @@ public class ProviderConf {
     @Bean
     public ProviderBootStarp providerBootStarp() {
         return new ProviderBootStarp();
+    }
+
+    @Bean//(initMethod = "start", destroyMethod = "stop")
+    public RegisterCenter registerCenter() {
+        return new ZkRegisterCenter();
+    }
+
+    @Bean
+    public ApplicationRunner runStart(ProviderBootStarp providerBootStarp) {
+        return x->{
+            providerBootStarp.start();
+        };
     }
 }
