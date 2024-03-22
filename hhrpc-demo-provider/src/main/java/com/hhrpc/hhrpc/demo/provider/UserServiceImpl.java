@@ -3,6 +3,8 @@ package com.hhrpc.hhrpc.demo.provider;
 import com.hhrpc.hhrpc.core.annotation.HhRpcProvider;
 import com.hhrpc.hhrpc.demo.api.User;
 import com.hhrpc.hhrpc.demo.api.UserService;
+import jakarta.annotation.Resource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,9 +15,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl implements UserService {
 
+    @Resource
+    private Environment environment;
+
     @Override
     public User findById(Integer uid) {
-        return new User(uid, "hh-" + System.currentTimeMillis());
+        String port = environment.getProperty("server.port");
+        return new User(uid, "hh-" +port+"-"+ System.currentTimeMillis());
     }
 
     @Override

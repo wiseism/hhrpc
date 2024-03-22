@@ -3,3 +3,6 @@ spring:
   name: hhrpc-demo-consumer
 server:
   port: 8088
+
+hhrpc:
+  providers: http://localhost:8081,http://localhost:8082,http://localhost:8083

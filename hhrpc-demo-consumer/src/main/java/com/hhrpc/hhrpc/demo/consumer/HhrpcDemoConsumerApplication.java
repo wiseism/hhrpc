@@ -11,6 +11,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 @SpringBootApplication
 @Import(ConsumerConf.class)
+@RestController
 public class HhrpcDemoConsumerApplication {
 
     @HhRpcConsumer
@@ -25,6 +28,11 @@ public class HhrpcDemoConsumerApplication {
 
     @HhRpcConsumer
     private OrderService orderService;
+
+    @RequestMapping(value = "/")
+    public User findUserById(int id) {
+        return this.userService.findById(id);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(HhrpcDemoConsumerApplication.class, args);
