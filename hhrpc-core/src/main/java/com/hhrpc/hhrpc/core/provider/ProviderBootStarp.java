@@ -19,8 +19,6 @@ import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,8 +33,6 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
 
     private String instance;
 
-
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -44,7 +40,7 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
 
     // 对象创建完，还没有初始化的时候，获取到所有的服务提供者
     @PostConstruct
-    public void buildProviders() {
+    public void init() {
         try {
             String port = environment.getProperty("server.port");
             String hostAddress = InetAddress.getLocalHost().getHostAddress();
@@ -100,46 +96,12 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
     }
 
 
-
-
-
-    public RpcResponse invokeMethod(RpcRequest rpcRequest) {
-        RpcResponse result = new RpcResponse();
-        try {
-            ProviderMeta providerMeta = fetchProviderMeta(rpcRequest);
-            Method method = providerMeta.getMethod();
-            Object[] args = TypeUtils.processArgs(rpcRequest.getArgs(), method.getParameterTypes(), method.getGenericParameterTypes());
-            Object data = method.invoke(providerMeta.getServiceImpl(), args);
-            result.setStatus(true);
-            result.setData(data);
-            return result;
-        }catch (Exception e) {
-            e.printStackTrace();
-            result.setStatus(false);
-            result.setData(null);
-            return result;
-        }
-    }
-
-    private ProviderMeta fetchProviderMeta(RpcRequest rpcRequest) {
-        return serviceMap.get(rpcRequest.getServiceName()).stream()
-                .filter(item->item.getMethodSign().equals(rpcRequest.getMethodSign()))
-                .findAny()
-                .orElse(null);
-    }
-
-    private Method findMethod(Object providerObj, String methodName) {
-        Method[] methods = providerObj.getClass().getMethods();
-        for (Method method : methods) {
-            if (method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    public MultiValueMap<String, ProviderMeta> getServiceMap() {
+        return serviceMap;
     }
 }
