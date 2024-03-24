@@ -1,8 +1,6 @@
 package com.hhrpc.hhrpc.core.consumer;
 
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.hhrpc.hhrpc.core.annotation.HhRpcConsumer;
 import com.hhrpc.hhrpc.core.api.LoadBalance;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;

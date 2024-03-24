@@ -9,7 +9,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
-import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 
@@ -23,11 +22,12 @@ import java.util.Objects;
 public class ZkRegisterCenter implements RegisterCenter {
 
     private CuratorFramework client;
+    private TreeCache treeCache;
 
 
     @Override
     public void start() {
-        final RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3, 1000);
+        final RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         this.client = CuratorFrameworkFactory.builder()
                 .retryPolicy(retryPolicy)
                 .connectString("localhost:2181")
@@ -38,6 +38,10 @@ public class ZkRegisterCenter implements RegisterCenter {
 
     @Override
     public void stop() {
+        System.out.println("===> stop zk");
+        if (Objects.nonNull(treeCache)) {
+            treeCache.close();
+        }
         this.client.close();
     }
 
@@ -88,18 +92,16 @@ public class ZkRegisterCenter implements RegisterCenter {
     public void subscribe(String service, EventListener eventListener) {
         try {
             String servicePath = Strings.lenientFormat("/%s", service);
-            final TreeCache treeCache = TreeCache.newBuilder(client, servicePath)
+            treeCache = TreeCache.newBuilder(client, servicePath)
                     .setCacheData(true)
                     .setMaxDepth(2)
                     .build();
-            treeCache.getListenable().addListener(new TreeCacheListener() {
-                @Override
-                public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
-                    System.out.println("===> subscribe.");
+            treeCache.getListenable().addListener((CuratorFramework cf, TreeCacheEvent event) -> {
+                    System.out.println("===> subscribe :" + service);
                     List<String> nodes = findAll(service);
+                    nodes.forEach(System.out::println);
                     eventListener.fire(new Event(nodes));
-                }
-            });
+                });
             treeCache.start();
         }catch (Exception e) {
             throw new RuntimeException(e);

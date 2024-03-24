@@ -1,23 +1,16 @@
 package com.hhrpc.hhrpc.core.conf;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.hhrpc.hhrpc.core.api.LoadBalance;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.api.Router;
-import com.hhrpc.hhrpc.core.cluster.RandomLoadBalance;
 import com.hhrpc.hhrpc.core.cluster.RoundBionLoadBalance;
 import com.hhrpc.hhrpc.core.consumer.ConsumerBootStrap;
-import com.hhrpc.hhrpc.core.register.StaticRegisterCenter;
 import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @Date 2024/3/12
