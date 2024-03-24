@@ -1,6 +1,10 @@
 server:
   port: 8081
 
+hhrpc:
+  zkservers: localhost:2181
+  zkroot: hhrpc
+
 app:
   id: hhrpc
   namespace: public

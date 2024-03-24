@@ -13,6 +13,7 @@ import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,14 +28,19 @@ public class ZkRegisterCenter implements RegisterCenter {
     private CuratorFramework client;
     private TreeCache treeCache;
 
+    @Value("${hhrpc.zkservers}")
+    private String zkServers;
+
+    @Value("${hhrpc.zkroot}")
+    private String zkRoot;
 
     @Override
     public void start() {
         final RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         this.client = CuratorFrameworkFactory.builder()
                 .retryPolicy(retryPolicy)
-                .connectString("localhost:2181")
-                .namespace("hhrpc")
+                .connectString(zkServers)
+                .namespace(zkRoot)
                 .build();
         this.client.start();
     }

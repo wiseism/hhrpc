@@ -6,7 +6,8 @@ server:
 
 hhrpc:
   providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
-
+  zkservers: localhost:2181
+  zkroot: hhrpc
 app:
   id: hhrpc
   namespace: public
