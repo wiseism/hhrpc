@@ -1,12 +1,10 @@
 package com.hhrpc.hhrpc.core.provider;
 
-import com.google.common.base.Strings;
 import com.hhrpc.hhrpc.core.annotation.HhRpcProvider;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
-import com.hhrpc.hhrpc.core.api.RpcRequest;
-import com.hhrpc.hhrpc.core.api.RpcResponse;
+import com.hhrpc.hhrpc.core.meta.InstanceMeta;
+import com.hhrpc.hhrpc.core.meta.ProviderMeta;
 import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
-import com.hhrpc.hhrpc.core.utils.TypeUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.BeansException;
@@ -31,7 +29,8 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
     private Environment environment;
     private MultiValueMap<String, ProviderMeta> serviceMap = new LinkedMultiValueMap<>();
 
-    private String instance;
+    private InstanceMeta instanceMeta;
+    private RegisterCenter registerCenter;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -42,9 +41,13 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
     @PostConstruct
     public void init() {
         try {
-            String port = environment.getProperty("server.port");
+            Integer port = Integer.valueOf(environment.getProperty("server.port"));
             String hostAddress = InetAddress.getLocalHost().getHostAddress();
-            this.instance = Strings.lenientFormat("%s_%s", hostAddress, port);
+            instanceMeta = InstanceMeta.builder()
+                    .schema("http")
+                    .host(hostAddress)
+                    .port(port)
+                    .build();
             Map<String, Object> beans = applicationContext.getBeansWithAnnotation(HhRpcProvider.class);
             for (Map.Entry<String, Object> entry : beans.entrySet()) {
                 Class<?>[] interfaces = entry.getValue().getClass().getInterfaces();
@@ -69,7 +72,7 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
 
     public void start() {
         // 启动zk
-        RegisterCenter registerCenter = applicationContext.getBean(RegisterCenter.class);
+        registerCenter = applicationContext.getBean(RegisterCenter.class);
         registerCenter.start();
         // 注册
         register();
@@ -82,16 +85,15 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
 
 
     private void register() {
-        RegisterCenter registerCenter = applicationContext.getBean(RegisterCenter.class);
         serviceMap.keySet().forEach(service->{
-            registerCenter.register(service, instance);
+            registerCenter.register(service, instanceMeta);
         });
     }
 
     private void unregister() {
         RegisterCenter registerCenter = applicationContext.getBean(RegisterCenter.class);
         serviceMap.keySet().forEach(service->{
-            registerCenter.unregister(service, instance);
+            registerCenter.unregister(service, instanceMeta);
         });
     }
 

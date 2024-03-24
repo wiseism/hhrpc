@@ -1,5 +1,7 @@
 package com.hhrpc.hhrpc.core.api;
 
+import com.hhrpc.hhrpc.core.meta.InstanceMeta;
+
 import java.util.List;
 
 /**
@@ -7,19 +9,19 @@ import java.util.List;
  * @Author lifei
  */
 public class Event {
-    List<String> data;
+    List<InstanceMeta> data;
 
     public Event(){}
 
-    public Event(List<String> data) {
+    public Event(List<InstanceMeta> data) {
         this.data = data;
     }
 
-    public List<String> getData() {
+    public List<InstanceMeta> getData() {
         return data;
     }
 
-    public void setData(List<String> data) {
+    public void setData(List<InstanceMeta> data) {
         this.data = data;
     }
 

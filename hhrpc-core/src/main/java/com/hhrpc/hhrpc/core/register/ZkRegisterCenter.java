@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.hhrpc.hhrpc.core.api.Event;
 import com.hhrpc.hhrpc.core.api.EventListener;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
+import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -14,6 +15,7 @@ import org.apache.zookeeper.CreateMode;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @Date 2024/3/22
@@ -46,13 +48,13 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public void register(String service, String instance) {
+    public void register(String service, InstanceMeta instanceMeta) {
         try {
             String servicePath = Strings.lenientFormat("/%s", service);
             if (Objects.isNull(client.checkExists().forPath(servicePath))) {
                 client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath);
             }
-            String instancePath = Strings.lenientFormat("%s/%s", servicePath, instance);
+            String instancePath = Strings.lenientFormat("%s/%s", servicePath, instanceMeta.toPath());
             if (Objects.isNull(client.checkExists().forPath(instancePath))) {
                 client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath);
             }
@@ -62,13 +64,13 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public void unregister(String service, String instance) {
+    public void unregister(String service, InstanceMeta instanceMeta) {
         try {
             String servicePath = Strings.lenientFormat("/%s", service);
             if (Objects.isNull(client.checkExists().forPath(servicePath))) {
                 return;
             }
-            String instancePath = Strings.lenientFormat("%s/%s", servicePath, instance);
+            String instancePath = Strings.lenientFormat("%s/%s", servicePath, instanceMeta.toPath());
             if (Objects.nonNull(client.checkExists().forPath(instancePath))) {
                 client.delete().quietly().forPath(instancePath);
             }
@@ -78,11 +80,18 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public List<String> findAll(String service) {
+    public List<InstanceMeta> findAll(String service) {
         try {
             String servicePath = Strings.lenientFormat("/%s", service);
             List<String> nodes = client.getChildren().forPath(servicePath);
-            return nodes;
+            List<InstanceMeta> result = nodes.stream()
+                    .map(node -> InstanceMeta.builder()
+                            .schema("http")
+                            .host(node.split("_")[0])
+                            .port(Integer.valueOf(node.split("_")[1]))
+                            .build())
+                    .collect(Collectors.toList());
+            return result;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -98,7 +107,7 @@ public class ZkRegisterCenter implements RegisterCenter {
                     .build();
             treeCache.getListenable().addListener((CuratorFramework cf, TreeCacheEvent event) -> {
                     System.out.println("===> subscribe :" + service);
-                    List<String> nodes = findAll(service);
+                    List<InstanceMeta> nodes = findAll(service);
                     nodes.forEach(System.out::println);
                     eventListener.fire(new Event(nodes));
                 });

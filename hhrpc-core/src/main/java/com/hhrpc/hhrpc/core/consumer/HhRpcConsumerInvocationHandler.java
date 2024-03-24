@@ -3,6 +3,7 @@ package com.hhrpc.hhrpc.core.consumer;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hhrpc.hhrpc.core.api.*;
+import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
 import com.hhrpc.hhrpc.core.utils.TypeUtils;
 import okhttp3.*;
@@ -25,12 +26,12 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
 
     private final String serviceName;
     private RpcContent rpcContent;
-    private List<String> providers;
+    private List<InstanceMeta> instanceMetaList;
 
-    public HhRpcConsumerInvocationHandler(String serviceName, RpcContent rpcContent, List<String> providers) {
+    public HhRpcConsumerInvocationHandler(String serviceName, RpcContent rpcContent, List<InstanceMeta> instanceMetaList) {
         this.serviceName = serviceName;
         this.rpcContent = rpcContent;
-        this.providers = providers;
+        this.instanceMetaList = instanceMetaList;
     }
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -58,8 +59,8 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
      */
     private RpcResponse getRpcResponse(RpcRequest request, Method method) {
         try {
-            String url = (String)rpcContent.getLoadBalance().choose(rpcContent.getRouter().rout(providers));
-            RpcResponse<?> rpcResponse = rpcContent.getHttpInvoker().post(request, url);
+            InstanceMeta instanceMeta = rpcContent.getLoadBalance().choose(rpcContent.getRouter().rout(instanceMetaList));
+            RpcResponse<?> rpcResponse = rpcContent.getHttpInvoker().post(request, instanceMeta.toUrl());
             RpcResponse result = TypeUtils.getRpcResponse(method, rpcResponse);
             return result;
         }catch (Exception e) {

@@ -2,6 +2,7 @@ package com.hhrpc.hhrpc.core.register;
 
 import com.hhrpc.hhrpc.core.api.EventListener;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
+import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 
 import java.util.List;
 
@@ -11,9 +12,9 @@ import java.util.List;
  */
 public class StaticRegisterCenter implements RegisterCenter {
 
-    private List<String> provider;
+    private List<InstanceMeta> provider;
 
-    public StaticRegisterCenter(List<String> provider) {
+    public StaticRegisterCenter(List<InstanceMeta> provider) {
         this.provider = provider;
     }
 
@@ -28,17 +29,17 @@ public class StaticRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public void register(String service, String instance) {
+    public void register(String service, InstanceMeta instanceMeta) {
 
     }
 
     @Override
-    public void unregister(String service, String instance) {
+    public void unregister(String service, InstanceMeta instanceMeta) {
 
     }
 
     @Override
-    public List<String> findAll(String service) {
+    public List<InstanceMeta> findAll(String service) {
         return provider;
     }
 
