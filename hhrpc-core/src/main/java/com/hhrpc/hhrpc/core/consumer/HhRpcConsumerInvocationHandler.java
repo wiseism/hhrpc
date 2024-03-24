@@ -41,7 +41,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         if (HhrpcMethodUtils.checkLocalMethod(method)){
             return null;
         }
-        RpcResponse rpcResponse = getRpcResponse(request, method.getReturnType(), method.getGenericReturnType());
+        RpcResponse rpcResponse = getRpcResponse(request, method);
         if (rpcResponse.getStatus()) {
             return rpcResponse.getData();
         }else {
@@ -61,7 +61,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
      * @param request
      * @return
      */
-    private RpcResponse getRpcResponse(RpcRequest request, Class<?> returnType, Type genericReturnType) {
+    private RpcResponse getRpcResponse(RpcRequest request, Method method) {
         try {
             Gson gson = new Gson();
             String requestData = gson.toJson(request);
@@ -70,32 +70,11 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
                     .url(url)
                     .post(RequestBody.create(requestData, MediaType.get("application/json; charset=utf-8")))
                     .build()).execute();
-            String responseData = response.body().string();
-            // 反序列结果
-            Class<?> realClazz = TypeUtils.cast(returnType);
-            if (List.class.isAssignableFrom(realClazz)) {
-                if (genericReturnType instanceof ParameterizedType parameterizedType) {
-                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                    TypeToken<?> listTypeToken = TypeToken.getParameterized(List.class, actualTypeArguments);
-                    TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, listTypeToken.getType());
-                    RpcResponse rpcResponse = gson.fromJson(responseData, parameterized.getType());
-                    return rpcResponse;
-                }
-            }
-            if (Map.class.isAssignableFrom(realClazz)) {
-                if (genericReturnType instanceof ParameterizedType parameterizedType) {
-                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                    TypeToken<?> mapTypeToken = TypeToken.getParameterized(Map.class, actualTypeArguments);
-                    TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, mapTypeToken.getType());
-                    RpcResponse rpcResponse = gson.fromJson(responseData, parameterized.getType());
-                    return rpcResponse;
-                }
-            }
-            TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, realClazz);
-            RpcResponse rpcResponse = gson.fromJson(responseData, parameterized.getType());
+            RpcResponse rpcResponse = TypeUtils.getRpcResponse(method, response);
             return rpcResponse;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
 }
