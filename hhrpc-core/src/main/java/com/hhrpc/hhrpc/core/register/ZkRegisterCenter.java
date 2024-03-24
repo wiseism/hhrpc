@@ -5,6 +5,7 @@ import com.hhrpc.hhrpc.core.api.Event;
 import com.hhrpc.hhrpc.core.api.EventListener;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
+import com.hhrpc.hhrpc.core.meta.ServiceMeta;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -48,9 +49,9 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public void register(String service, InstanceMeta instanceMeta) {
+    public void register(ServiceMeta serviceMeta, InstanceMeta instanceMeta) {
         try {
-            String servicePath = Strings.lenientFormat("/%s", service);
+            String servicePath = Strings.lenientFormat("/%s", serviceMeta.toPath());
             if (Objects.isNull(client.checkExists().forPath(servicePath))) {
                 client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath);
             }
@@ -64,9 +65,9 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public void unregister(String service, InstanceMeta instanceMeta) {
+    public void unregister(ServiceMeta serviceMeta, InstanceMeta instanceMeta) {
         try {
-            String servicePath = Strings.lenientFormat("/%s", service);
+            String servicePath = Strings.lenientFormat("/%s", serviceMeta.toPath());
             if (Objects.isNull(client.checkExists().forPath(servicePath))) {
                 return;
             }
@@ -80,9 +81,9 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public List<InstanceMeta> findAll(String service) {
+    public List<InstanceMeta> findAll(ServiceMeta serviceMeta) {
         try {
-            String servicePath = Strings.lenientFormat("/%s", service);
+            String servicePath = Strings.lenientFormat("/%s", serviceMeta.toPath());
             List<String> nodes = client.getChildren().forPath(servicePath);
             List<InstanceMeta> result = nodes.stream()
                     .map(node -> InstanceMeta.builder()
@@ -98,16 +99,16 @@ public class ZkRegisterCenter implements RegisterCenter {
     }
 
     @Override
-    public void subscribe(String service, EventListener eventListener) {
+    public void subscribe(ServiceMeta serviceMeta, EventListener eventListener) {
         try {
-            String servicePath = Strings.lenientFormat("/%s", service);
+            String servicePath = Strings.lenientFormat("/%s", serviceMeta.toPath());
             treeCache = TreeCache.newBuilder(client, servicePath)
                     .setCacheData(true)
                     .setMaxDepth(2)
                     .build();
             treeCache.getListenable().addListener((CuratorFramework cf, TreeCacheEvent event) -> {
-                    System.out.println("===> subscribe :" + service);
-                    List<InstanceMeta> nodes = findAll(service);
+                    System.out.println("===> subscribe :" + serviceMeta);
+                    List<InstanceMeta> nodes = findAll(serviceMeta);
                     nodes.forEach(System.out::println);
                     eventListener.fire(new Event(nodes));
                 });

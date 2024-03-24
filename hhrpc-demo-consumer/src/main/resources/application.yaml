@@ -6,3 +6,8 @@ server:
 
 hhrpc:
   providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
+
+app:
+  id: hhrpc
+  namespace: public
+  env: dev

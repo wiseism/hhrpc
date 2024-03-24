@@ -1,12 +1,12 @@
 package com.hhrpc.hhrpc.core.consumer;
 
-import com.google.common.base.Strings;
 import com.hhrpc.hhrpc.core.annotation.HhRpcConsumer;
 import com.hhrpc.hhrpc.core.api.LoadBalance;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.api.Router;
 import com.hhrpc.hhrpc.core.api.RpcContent;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
+import com.hhrpc.hhrpc.core.meta.ServiceMeta;
 import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -17,7 +17,6 @@ import org.springframework.core.env.Environment;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -29,19 +28,25 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
     private ApplicationContext applicationContext;
     private Environment environment;
     private Map<String, Object> proxyMap = new HashMap<>();
+    private String app;
+    private String namespace;
+    private String env;
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
 
-    public void screenConsumerServiceFields() throws IllegalAccessException {
+    public void start() throws IllegalAccessException {
         RegisterCenter registerCenter = applicationContext.getBean(RegisterCenter.class);
         Router router = applicationContext.getBean(Router.class);
         LoadBalance loadBalance = applicationContext.getBean(LoadBalance.class);
         HttpInvoker httpInvoker = applicationContext.getBean(HttpInvoker.class);
         RpcContent rpcContent = new RpcContent(router, loadBalance, httpInvoker);
         String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        app = environment.getProperty("app.id");
+        namespace = environment.getProperty("app.namespace");
+        env = environment.getProperty("app.env");
         for (String beanDefinitionName : beanDefinitionNames) {
             Object bean = applicationContext.getBean(beanDefinitionName);
             // 获取这个bean中，所有带有 @HhRpcConsumer 注解的字段
@@ -70,8 +75,13 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
      */
     private Object createProxyObject(Class<?> clazz, RpcContent rpcContent, RegisterCenter registerCenter) {
         String serviceName = clazz.getCanonicalName();
-        List<InstanceMeta> instanceMetaList = registerCenter.findAll(serviceName);
-        registerCenter.subscribe(serviceName, (event)->{
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .name(serviceName)
+                .env(env)
+                .namespace(namespace)
+                .app(app).build();
+        List<InstanceMeta> instanceMetaList = registerCenter.findAll(serviceMeta);
+        registerCenter.subscribe(serviceMeta, (event)->{
             instanceMetaList.clear();
             instanceMetaList.addAll(event.getData());
         });

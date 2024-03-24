@@ -34,7 +34,7 @@ public class ConsumerConf {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner runScreenConsumerServiceFields(ConsumerBootStrap consumerBootStrap) {
         return x -> {
-            consumerBootStrap.screenConsumerServiceFields();
+            consumerBootStrap.start();
         };
     }
 
