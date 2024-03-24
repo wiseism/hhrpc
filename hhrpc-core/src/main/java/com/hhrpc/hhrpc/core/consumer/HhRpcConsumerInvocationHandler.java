@@ -49,12 +49,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         }
     }
 
-    private final OkHttpClient client = new OkHttpClient.Builder()
-            .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS))
-            .connectTimeout(1, TimeUnit.SECONDS)
-            .readTimeout(1, TimeUnit.SECONDS)
-            .writeTimeout(1, TimeUnit.SECONDS)
-            .build();
+
 
     /**
      * 通过HTTP+json请求，获取RpcResponse
@@ -63,15 +58,10 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
      */
     private RpcResponse getRpcResponse(RpcRequest request, Method method) {
         try {
-            Gson gson = new Gson();
-            String requestData = gson.toJson(request);
             String url = (String)rpcContent.getLoadBalance().choose(rpcContent.getRouter().rout(providers));
-            Response response = client.newCall(new Request.Builder()
-                    .url(url)
-                    .post(RequestBody.create(requestData, MediaType.get("application/json; charset=utf-8")))
-                    .build()).execute();
-            RpcResponse rpcResponse = TypeUtils.getRpcResponse(method, response);
-            return rpcResponse;
+            RpcResponse<?> rpcResponse = rpcContent.getHttpInvoker().post(request, url);
+            RpcResponse result = TypeUtils.getRpcResponse(method, rpcResponse);
+            return result;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }

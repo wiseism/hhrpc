@@ -92,10 +92,10 @@ public class TypeUtils {
         return result;
     }
 
-    public static RpcResponse getRpcResponse(Method method, Response response) {
+    public static RpcResponse getRpcResponse(Method method, RpcResponse<?> rpcResponse) {
         try {
             Gson gson  = new Gson();
-            String responseData = response.body().string();
+            String responseData = gson.toJson(rpcResponse);
             // 反序列结果
             Class<?> realClazz = TypeUtils.cast(method.getReturnType());
             TypeToken<?> parameterized = TypeToken.getParameterized(RpcResponse.class, realClazz);
@@ -114,8 +114,8 @@ public class TypeUtils {
                     parameterized = TypeToken.getParameterized(RpcResponse.class, mapTypeToken.getType());
                 }
             }
-            RpcResponse rpcResponse = gson.fromJson(responseData, parameterized.getType());
-            return rpcResponse;
+            RpcResponse result = gson.fromJson(responseData, parameterized.getType());
+            return result;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }

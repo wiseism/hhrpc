@@ -1,5 +1,7 @@
 package com.hhrpc.hhrpc.core.api;
 
+import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
+
 import java.util.List;
 
 /**
@@ -11,12 +13,15 @@ public class RpcContent {
     private Router router;
     private LoadBalance loadBalance;
 
+    private HttpInvoker httpInvoker;
+
     public RpcContent() {
     }
 
-    public RpcContent(Router router, LoadBalance loadBalance) {
+    public RpcContent(Router router, LoadBalance loadBalance, HttpInvoker httpInvoker) {
         this.router = router;
         this.loadBalance = loadBalance;
+        this.httpInvoker = httpInvoker;
     }
 
     public List<Filter> getFilterList() {
@@ -43,12 +48,17 @@ public class RpcContent {
         this.loadBalance = loadBalance;
     }
 
+    public HttpInvoker getHttpInvoker() {
+        return httpInvoker;
+    }
+
     @Override
     public String toString() {
         return "RpcContent{" +
                 "filterList=" + filterList +
                 ", router=" + router +
                 ", loadBalance=" + loadBalance +
+                ", httpInvoker=" + httpInvoker +
                 '}';
     }
 }
