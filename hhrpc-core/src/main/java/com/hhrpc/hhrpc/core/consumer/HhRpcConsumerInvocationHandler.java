@@ -45,6 +45,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         for (Filter filter : filterList) {
             Object result = filter.preFilter(request);
             if (Objects.nonNull(result)) {
+                log.debug("===> filter: " + result);
                 return result;
             }
         }
