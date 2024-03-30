@@ -1,5 +1,6 @@
 package com.hhrpc.hhrpc.core.consumer;
 
+import com.hhrpc.hhrpc.core.api.Filter;
 import com.hhrpc.hhrpc.core.api.RpcContent;
 import com.hhrpc.hhrpc.core.api.RpcRequest;
 import com.hhrpc.hhrpc.core.api.RpcResponse;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Date 2024/3/12
@@ -39,14 +41,26 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         if (HhrpcMethodUtils.checkLocalMethod(method)){
             return null;
         }
+        List<Filter> filterList = rpcContent.getFilterList();
+        for (Filter filter : filterList) {
+            Object result = filter.preFilter(request);
+            if (Objects.nonNull(result)) {
+                return result;
+            }
+        }
         log.debug("==> invoke: " + request);
         RpcResponse rpcResponse = getRpcResponse(request, method);
         log.debug("==> post result: " + rpcResponse);
-        if (rpcResponse.getStatus()) {
-            return rpcResponse.getData();
-        }else {
+        if (!rpcResponse.getStatus()) {
             return null;
         }
+        for (Filter filter : filterList) {
+            Object result = filter.postFilter(request, rpcResponse, rpcResponse.getData());
+            if (Objects.nonNull(result)) {
+                return result;
+            }
+        }
+        return rpcResponse.getData();
     }
 
 

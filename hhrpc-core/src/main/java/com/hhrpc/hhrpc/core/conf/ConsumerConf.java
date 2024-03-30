@@ -1,5 +1,6 @@
 package com.hhrpc.hhrpc.core.conf;
 
+import com.hhrpc.hhrpc.core.api.Filter;
 import com.hhrpc.hhrpc.core.api.LoadBalance;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.api.Router;
@@ -58,5 +59,10 @@ public class ConsumerConf {
     @Bean
     public HttpInvoker httpInvoker() {
         return new OkHttpInvoker();
+    }
+
+    @Bean
+    public Filter filter01() {
+        return Filter.DEFAULT;
     }
 }
