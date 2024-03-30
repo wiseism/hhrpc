@@ -13,6 +13,8 @@ import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
  * @Author lifei
  */
 public class ZkRegisterCenter implements RegisterCenter {
+
+    private static final Logger log = LoggerFactory.getLogger(ZkRegisterCenter.class);
 
     private CuratorFramework client;
     private TreeCache treeCache;
@@ -42,12 +46,13 @@ public class ZkRegisterCenter implements RegisterCenter {
                 .connectString(zkServers)
                 .namespace(zkRoot)
                 .build();
+        log.info("===> start zk...");
         this.client.start();
     }
 
     @Override
     public void stop() {
-        System.out.println("===> stop zk");
+        log.info("===> stop zk");
         if (Objects.nonNull(treeCache)) {
             treeCache.close();
         }
@@ -98,6 +103,8 @@ public class ZkRegisterCenter implements RegisterCenter {
                             .port(Integer.valueOf(node.split("_")[1]))
                             .build())
                     .collect(Collectors.toList());
+            log.debug("===> findAll from zk: ");
+            log.debug(result.toString());
             return result;
         }catch (Exception e) {
             throw new RuntimeException(e);
@@ -113,9 +120,8 @@ public class ZkRegisterCenter implements RegisterCenter {
                     .setMaxDepth(2)
                     .build();
             treeCache.getListenable().addListener((CuratorFramework cf, TreeCacheEvent event) -> {
-                    System.out.println("===> subscribe :" + serviceMeta);
+                    log.debug("===> subscribe :" + serviceMeta);
                     List<InstanceMeta> nodes = findAll(serviceMeta);
-                    nodes.forEach(System.out::println);
                     eventListener.fire(new Event(nodes));
                 });
             treeCache.start();

@@ -1,28 +1,25 @@
 package com.hhrpc.hhrpc.core.consumer;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.hhrpc.hhrpc.core.api.*;
+import com.hhrpc.hhrpc.core.api.RpcContent;
+import com.hhrpc.hhrpc.core.api.RpcRequest;
+import com.hhrpc.hhrpc.core.api.RpcResponse;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
 import com.hhrpc.hhrpc.core.utils.TypeUtils;
-import okhttp3.*;
-import org.springframework.context.annotation.TypeFilterUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Date 2024/3/12
  * @Author lifei
  */
 public class HhRpcConsumerInvocationHandler implements InvocationHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(HhRpcConsumerInvocationHandler.class);
 
     private final String serviceName;
     private RpcContent rpcContent;
@@ -42,7 +39,9 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         if (HhrpcMethodUtils.checkLocalMethod(method)){
             return null;
         }
+        log.debug("==> invoke: " + request);
         RpcResponse rpcResponse = getRpcResponse(request, method);
+        log.debug("==> post result: " + rpcResponse);
         if (rpcResponse.getStatus()) {
             return rpcResponse.getData();
         }else {
