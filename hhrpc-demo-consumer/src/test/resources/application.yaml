@@ -1,0 +1,19 @@
+spring:
+  application:
+  name: hhrpc-demo-consumer
+server:
+  port: 8088
+
+hhrpc:
+  providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
+  zkservers: localhost:2182
+  zkroot: hhrpc
+app:
+  id: hhrpc
+  namespace: public
+  env: dev
+
+logging:
+  level:
+    root: error
+    com.hhrpc.hhrpc: debug
