@@ -3,18 +3,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>com.hhrpc</groupId>
+        <artifactId>hhrpc</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>com.hhrpc</groupId>
     <artifactId>hhrpc-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>hhrpc-core</name>
     <description>hhrpc-core</description>
     <properties>
-        <java.version>17</java.version>
         <okhttp.version>4.12.0</okhttp.version>
         <gson.version>2.10.1</gson.version>
         <guava.version>33.0.0-jre</guava.version>
@@ -24,11 +21,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>${springboot.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>${springboot.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -60,13 +59,5 @@
 
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
