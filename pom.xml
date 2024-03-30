@@ -2,12 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
     <groupId>com.hhrpc</groupId>
     <artifactId>hhrpc</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -16,21 +10,18 @@
     <packaging>pom</packaging>
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <springboot.version>3.2.3</springboot.version>
+        <maven-surefire-plugin.version>3.2.3</maven-surefire-plugin.version>
+        <junit.version>4.13.2</junit.version>
     </properties>
 
     <modules>
         <module>hhrpc-core</module>
         <module>hhrpc-demo-api</module>
         <module>hhrpc-demo-provider</module>
+        <module>hhrpc-demo-consumer</module>
     </modules>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
