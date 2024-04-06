@@ -39,7 +39,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         if (HhrpcMethodUtils.checkLocalMethod(method)){
             return null;
         }
-        int retries = 2;
+        int retries = Integer.parseInt(rpcContent.getParameters().get("app.retries"));
         String url = null;
         Object result = null;
         while (retries-- >0) {

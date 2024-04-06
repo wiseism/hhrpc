@@ -47,6 +47,8 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
         app = environment.getProperty("app.id");
         namespace = environment.getProperty("app.namespace");
         env = environment.getProperty("app.env");
+        int retries = Integer.parseInt(environment.getProperty("app.retries", "2"));
+        rpcContent.getParameters().put("app.retries", String.valueOf(retries));
         for (String beanDefinitionName : beanDefinitionNames) {
             Object bean = applicationContext.getBean(beanDefinitionName);
             // 获取这个bean中，所有带有 @HhRpcConsumer 注解的字段

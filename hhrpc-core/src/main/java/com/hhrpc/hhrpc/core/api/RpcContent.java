@@ -1,9 +1,12 @@
 package com.hhrpc.hhrpc.core.api;
 
+import com.google.common.base.MoreObjects;
 import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Date 2024/3/22
@@ -13,6 +16,7 @@ public class RpcContent {
     private List<Filter> filterList;
     private Router<InstanceMeta> router;
     private LoadBalance<InstanceMeta> loadBalance;
+    private Map<String, String> parameters = new HashMap<>();
 
     private HttpInvoker httpInvoker;
 
@@ -57,13 +61,22 @@ public class RpcContent {
         this.httpInvoker = httpInvoker;
     }
 
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
+    }
+
     @Override
     public String toString() {
-        return "RpcContent{" +
-                "filterList=" + filterList +
-                ", router=" + router +
-                ", loadBalance=" + loadBalance +
-                ", httpInvoker=" + httpInvoker +
-                '}';
+        return MoreObjects.toStringHelper(RpcContent.class)
+                .add("filterList", filterList)
+                .add("router", router)
+                .add("loadBalance", loadBalance)
+                .add("httpInvoker", httpInvoker)
+                .add("parameters", parameters)
+                .toString();
     }
 }
