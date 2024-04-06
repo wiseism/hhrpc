@@ -11,5 +11,7 @@ public interface UserService {
 
     User findUser(User user);
 
+    User findTimeout(long timeout);
+
 
 }

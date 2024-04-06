@@ -43,4 +43,17 @@ public class UserServiceImpl implements UserService {
     public User findUser(User user) {
         return user;
     }
+
+    @Override
+    public User findTimeout(long timeout) {
+        String port = environment.getProperty("server.port");
+        if ("8081".equals(port)) {
+            try {
+                Thread.sleep(timeout);
+            }catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return new User(201, "timeout-"+port+"-"+System.currentTimeMillis());
+    }
 }

@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
@@ -33,6 +34,11 @@ public class HhrpcDemoConsumerApplication {
     @RequestMapping(value = "/")
     public User findUserById(int id) {
         return this.userService.findById(id);
+    }
+
+    @RequestMapping(value = "/findUserTimeout")
+    public User findUserTimeout(@RequestParam("timeout") long timeout) {
+        return this.userService.findTimeout(timeout);
     }
 
     public static void main(String[] args) {
@@ -67,5 +73,11 @@ public class HhrpcDemoConsumerApplication {
         map.put("002", new Order(121, "map02"));
         Map<String, Order> mapOrder = orderService.findMapOrder(map);
         System.out.println(mapOrder);
+        try {
+            User timeoutUser = userService.findTimeout(1100);
+            System.out.println(timeoutUser);
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
