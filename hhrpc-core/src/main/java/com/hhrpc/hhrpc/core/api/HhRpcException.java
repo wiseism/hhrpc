@@ -11,7 +11,7 @@ public class HhRpcException extends RuntimeException {
     // X 技术类异常； Y 业务类异常； Z 未知异常
 
     public static final String METHOD_NOT_FOUND = "X001_method_not_found";
-    public static final String HTTP_INVOKER_TIMEOUT = "X001_http_invoker_timeout";
+    public static final String HTTP_INVOKER_TIMEOUT = "X002_http_invoker_timeout";
     public static final String UNKNOWN = "Z001_unknown";
 
     public HhRpcException(){}

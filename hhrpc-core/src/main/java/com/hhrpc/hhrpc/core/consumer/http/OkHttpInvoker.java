@@ -36,8 +36,8 @@ public class OkHttpInvoker implements HttpInvoker {
                     .post(RequestBody.create(requestData, MediaType.get("application/json; charset=utf-8")))
                     .build()).execute();
             String resultJson = response.body().string();
-//            return gson.fromJson(resultJson, RpcResponse.class);
-            return JSONObject.parseObject(resultJson, RpcResponse.class);
+            return gson.fromJson(resultJson, RpcResponse.class);
+//            return JSONObject.parseObject(resultJson, RpcResponse.class);
         }catch (Exception e) {
             throw new RuntimeException(e);
         }

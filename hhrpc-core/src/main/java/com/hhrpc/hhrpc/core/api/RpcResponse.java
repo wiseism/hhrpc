@@ -10,7 +10,7 @@ public class RpcResponse<T> {
 
     private Boolean status;
     private T data;
-    private HhRpcException ex;
+    private String errorCode;
 
     public Boolean getStatus() {
         return status;
@@ -28,12 +28,12 @@ public class RpcResponse<T> {
         this.data = data;
     }
 
-    public HhRpcException getEx() {
-        return ex;
+    public String getErrorCode() {
+        return errorCode;
     }
 
-    public void setEx(HhRpcException ex) {
-        this.ex = ex;
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class RpcResponse<T> {
         return MoreObjects.toStringHelper(RpcResponse.class)
                 .add("status", status)
                 .add("data", data)
-                .add("ex", ex)
+                .add("errorCode", errorCode)
                 .toString();
     }
 }
