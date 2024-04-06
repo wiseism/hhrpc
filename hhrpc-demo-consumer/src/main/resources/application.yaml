@@ -16,4 +16,4 @@ app:
 logging:
   level:
     root: error
-    com.hhrpc.hhrpc: debug
+    com.hhrpc.hhrpc: info

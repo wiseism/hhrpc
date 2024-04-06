@@ -68,9 +68,9 @@ public class ConsumerConf {
         return Filter.DEFAULT;
     }
 
-    @Bean
-    public Filter filter02() {
-        return new CacheFilter();
-//        return new MockFilter();
-    }
+//    @Bean
+//    public Filter filter02() {
+//        return new CacheFilter();
+////        return new MockFilter();
+//    }
 }

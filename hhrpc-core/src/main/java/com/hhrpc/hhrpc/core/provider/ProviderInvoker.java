@@ -1,11 +1,13 @@
 package com.hhrpc.hhrpc.core.provider;
 
+import com.hhrpc.hhrpc.core.api.HhRpcException;
 import com.hhrpc.hhrpc.core.api.RpcRequest;
 import com.hhrpc.hhrpc.core.api.RpcResponse;
 import com.hhrpc.hhrpc.core.meta.ProviderMeta;
 import com.hhrpc.hhrpc.core.utils.TypeUtils;
 import org.springframework.util.MultiValueMap;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -20,8 +22,9 @@ public class ProviderInvoker {
         this.serviceMap = providerBootStarp.getServiceMap();
     }
 
-    public RpcResponse invokeMethod(RpcRequest rpcRequest) {
-        RpcResponse result = new RpcResponse();
+    public RpcResponse<Object> invokeMethod(RpcRequest rpcRequest) {
+        RpcResponse<Object> result = new RpcResponse<>();
+        result.setStatus(false);
         try {
             ProviderMeta providerMeta = fetchProviderMeta(rpcRequest);
             Method method = providerMeta.getMethod();
@@ -30,12 +33,12 @@ public class ProviderInvoker {
             result.setStatus(true);
             result.setData(data);
             return result;
-        }catch (Exception e) {
-            e.printStackTrace();
-            result.setStatus(false);
-            result.setData(null);
-            return result;
+        } catch (InvocationTargetException e) {
+            result.setEx(new HhRpcException(e.getTargetException(), HhRpcException.UNKNOWN));
+        } catch (IllegalAccessException e) {
+            result.setEx(new HhRpcException(e, HhRpcException.UNKNOWN));
         }
+        return result;
     }
 
     private ProviderMeta fetchProviderMeta(RpcRequest rpcRequest) {

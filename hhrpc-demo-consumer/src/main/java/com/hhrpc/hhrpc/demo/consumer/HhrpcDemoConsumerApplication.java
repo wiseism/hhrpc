@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
@@ -42,7 +43,7 @@ public class HhrpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner runServiceMethods() {
         return (x) -> {
-//            testAll();
+            testAll();
         };
     }
 
@@ -55,14 +56,16 @@ public class HhrpcDemoConsumerApplication {
         System.out.println(order);
         System.out.println(orderService.toString());
         System.out.println(userService.findById(1120, "aaa"));
-
         System.out.println(userService.findLongId(123L));
         System.out.println(userService.findUser(new User(1, "aa")));
-        System.out.println(Arrays.toString(orderService.findLongArray(new long[]{1l, 2l, 3l, 4l, 5l})));
-        System.out.println(orderService.findLongOrder(Arrays.asList(new Order(1, "aa"), new Order(2, "bb2"))));
+        long[]  longArray= orderService.findLongArray(new long[]{1l, 2l, 3l, 4l, 5l});
+        System.out.println(Arrays.toString(longArray));
+        List<Order> longOrderList = orderService.findLongOrder(Arrays.asList(new Order(1, "aa"), new Order(2, "bb2")));
+        System.out.println(longOrderList);
         Map<String, Order> map = new HashMap<>();
         map.put("001", new Order(111, "map01"));
         map.put("002", new Order(121, "map02"));
-        System.out.println(orderService.findMapOrder(map));
+        Map<String, Order> mapOrder = orderService.findMapOrder(map);
+        System.out.println(mapOrder);
     }
 }

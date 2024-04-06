@@ -1,5 +1,6 @@
 package com.hhrpc.hhrpc.core.consumer.http;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hhrpc.hhrpc.core.api.RpcRequest;
@@ -34,7 +35,9 @@ public class OkHttpInvoker implements HttpInvoker {
                     .url(url)
                     .post(RequestBody.create(requestData, MediaType.get("application/json; charset=utf-8")))
                     .build()).execute();
-            return gson.fromJson(response.body().string(), RpcResponse.class);
+            String resultJson = response.body().string();
+//            return gson.fromJson(resultJson, RpcResponse.class);
+            return JSONObject.parseObject(resultJson, RpcResponse.class);
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
