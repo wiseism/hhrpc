@@ -13,5 +13,6 @@ public interface UserService {
 
     User findTimeout(long timeout);
 
+    void updateTimeoutPorts(String ports);
 
 }
