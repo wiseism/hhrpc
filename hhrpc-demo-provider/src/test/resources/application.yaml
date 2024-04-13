@@ -9,3 +9,7 @@ app:
   id: hhrpc
   namespace: public
   env: dev
+  metas:
+    gray: false
+    bc: bj
+    union: B001

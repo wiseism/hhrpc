@@ -1,7 +1,9 @@
 package com.hhrpc.hhrpc.core.meta;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 
 import java.util.Map;
 
@@ -107,15 +109,19 @@ public class InstanceMeta {
         this.parameters = parameters;
     }
 
+    public String toMetas() {
+        return new Gson().toJson(parameters);
+    }
+
     @Override
     public String toString() {
-        return "InstanceMeta{" +
-                "schema='" + schema + '\'' +
-                ", host='" + host + '\'' +
-                ", port='" + port + '\'' +
-                ", context='" + context + '\'' +
-                ", status=" + status +
-                ", parameters=" + parameters +
-                '}';
+        return MoreObjects.toStringHelper(InstanceMeta.class)
+                .add("schema", schema)
+                .add("host", host)
+                .add("port", port)
+                .add("context", context)
+                .add("status", status)
+                .add("parameters", parameters)
+                .toString();
     }
 }

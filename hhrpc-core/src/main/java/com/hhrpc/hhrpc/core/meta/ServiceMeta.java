@@ -1,6 +1,11 @@
 package com.hhrpc.hhrpc.core.meta;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+
+import java.util.Map;
 
 /**
  * @Date 2024/3/24
@@ -11,6 +16,8 @@ public class ServiceMeta {
     private String namespace;
     private String name;
     private String env;
+
+    private Map<String, String> parameters = Maps.newHashMap();
 
     public ServiceMeta(){}
     private ServiceMeta(Builder builder){
@@ -77,13 +84,26 @@ public class ServiceMeta {
         this.env = env;
     }
 
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
+    }
+
+    public String toMetas() {
+        return new Gson().toJson(parameters);
+    }
+
     @Override
     public String toString() {
-        return "ServiceMeta{" +
-                "app='" + app + '\'' +
-                ", namespace='" + namespace + '\'' +
-                ", name='" + name + '\'' +
-                ", env='" + env + '\'' +
-                '}';
+        return MoreObjects.toStringHelper(ServiceMeta.class)
+                .add("app", app)
+                .add("namespace", namespace)
+                .add("name", name)
+                .add("env", env)
+                .add("parameters", parameters)
+                .toString();
     }
 }

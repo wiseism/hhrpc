@@ -7,6 +7,7 @@ import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.core.annotation.Order;
  * @Author lifei
  */
 @Configuration
+@Import(ProviderGrayConf.class)
 public class ProviderConf {
 
     @Bean

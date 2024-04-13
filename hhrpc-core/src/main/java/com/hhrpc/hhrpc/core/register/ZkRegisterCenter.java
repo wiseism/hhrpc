@@ -1,6 +1,8 @@
 package com.hhrpc.hhrpc.core.register;
 
 import com.google.common.base.Strings;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.hhrpc.hhrpc.core.api.Event;
 import com.hhrpc.hhrpc.core.api.EventListener;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -64,11 +67,11 @@ public class ZkRegisterCenter implements RegisterCenter {
         try {
             String servicePath = Strings.lenientFormat("/%s", serviceMeta.toPath());
             if (Objects.isNull(client.checkExists().forPath(servicePath))) {
-                client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath);
+                client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, serviceMeta.toMetas().getBytes());
             }
             String instancePath = Strings.lenientFormat("%s/%s", servicePath, instanceMeta.toPath());
             if (Objects.isNull(client.checkExists().forPath(instancePath))) {
-                client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath);
+                client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, instanceMeta.toMetas().getBytes());
             }
         }catch (Exception e) {
             throw new RuntimeException(e);
@@ -96,19 +99,35 @@ public class ZkRegisterCenter implements RegisterCenter {
         try {
             String servicePath = Strings.lenientFormat("/%s", serviceMeta.toPath());
             List<String> nodes = client.getChildren().forPath(servicePath);
-            List<InstanceMeta> result = nodes.stream()
-                    .map(node -> InstanceMeta.builder()
-                            .schema("http")
-                            .host(node.split("_")[0])
-                            .port(Integer.valueOf(node.split("_")[1]))
-                            .build())
-                    .collect(Collectors.toList());
+            List<InstanceMeta> providers = mapToInstanceMeta(nodes, servicePath);
             log.debug("===> findAll from zk: ");
-            log.debug(result.toString());
-            return result;
+            providers.forEach(System.out::println);
+            return providers;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<InstanceMeta> mapToInstanceMeta(List<String> nodes, String servicePath) {
+        return nodes.stream()
+                .map(node -> {
+                    InstanceMeta instanceMeta = InstanceMeta.builder()
+                            .schema("http")
+                            .host(node.split("_")[0])
+                            .port(Integer.valueOf(node.split("_")[1]))
+                            .build();
+                    String path = Strings.lenientFormat("%s/%s", servicePath, node);
+                    byte[] bytes;
+                    try {
+                        bytes = client.getData().forPath(path);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    TypeToken<?> mapToken = TypeToken.getParameterized(Map.class, String.class, String.class);
+                    Map<String, String> parameters = new Gson().fromJson(new String(bytes), mapToken.getType());
+                    instanceMeta.setParameters(parameters);
+                    return instanceMeta;
+                }).collect(Collectors.toList());
     }
 
     @Override

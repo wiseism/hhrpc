@@ -2,12 +2,14 @@ package com.hhrpc.hhrpc.core.provider;
 
 import com.hhrpc.hhrpc.core.annotation.HhRpcProvider;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
+import com.hhrpc.hhrpc.core.conf.ProviderGrayConf;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.meta.ProviderMeta;
 import com.hhrpc.hhrpc.core.meta.ServiceMeta;
 import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import jakarta.annotation.Resource;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -37,6 +39,9 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
     private String namespace;
     private String env;
 
+    @Resource
+    private ProviderGrayConf providerGrayConf;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -46,16 +51,7 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
     @PostConstruct
     public void init() {
         try {
-            Integer port = Integer.valueOf(environment.getProperty("server.port"));
-            app = environment.getProperty("app.id");
-            namespace = environment.getProperty("app.namespace");
-            env = environment.getProperty("app.env");
-            String hostAddress = InetAddress.getLocalHost().getHostAddress();
-            instanceMeta = InstanceMeta.builder()
-                    .schema("http")
-                    .host(hostAddress)
-                    .port(port)
-                    .build();
+            instanceMeta = createInstanceMeta();
             Map<String, Object> beans = applicationContext.getBeansWithAnnotation(HhRpcProvider.class);
             for (Map.Entry<String, Object> entry : beans.entrySet()) {
                 Class<?>[] interfaces = entry.getValue().getClass().getInterfaces();
@@ -73,6 +69,25 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
                     }
                 }
             }
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private InstanceMeta createInstanceMeta() {
+        try {
+            Integer port = Integer.valueOf(environment.getProperty("server.port", "8081"));
+            app = environment.getProperty("app.id");
+            namespace = environment.getProperty("app.namespace");
+            env = environment.getProperty("app.env");
+            String hostAddress = InetAddress.getLocalHost().getHostAddress();
+            InstanceMeta result = InstanceMeta.builder()
+                    .schema("http")
+                    .host(hostAddress)
+                    .port(port)
+                    .build();
+            result.getParameters().putAll(providerGrayConf.getMetas());
+            return result;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
