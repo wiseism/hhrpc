@@ -18,7 +18,7 @@ import java.io.IOException;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class ProviderGrayConfTest {
+public class ProviderGrayRouterConfTest {
 
     private static TestingServer testingServer;
 

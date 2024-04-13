@@ -4,6 +4,7 @@ import com.hhrpc.hhrpc.core.api.Filter;
 import com.hhrpc.hhrpc.core.api.LoadBalance;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.api.Router;
+import com.hhrpc.hhrpc.core.cluster.GrayRouter;
 import com.hhrpc.hhrpc.core.cluster.RoundBionLoadBalance;
 import com.hhrpc.hhrpc.core.consumer.ConsumerBootStrap;
 import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
@@ -28,6 +29,9 @@ public class ConsumerConf {
     @Value("${hhrpc.providers}")
     private String urls;
 
+    @Value("${app.grayRatio}")
+    private Integer grayRatio;
+
     @Bean
     public ConsumerBootStrap consumerBootStrap() {
         return new ConsumerBootStrap();
@@ -43,7 +47,7 @@ public class ConsumerConf {
 
     @Bean
     public Router<InstanceMeta> router() {
-        return Router.DEFAULT;
+        return new GrayRouter(grayRatio);
     }
 
     @Bean

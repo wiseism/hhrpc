@@ -1,11 +1,15 @@
 package com.hhrpc.hhrpc.demo.consumer;
 
 import com.hhrpc.hhrpc.core.annotation.HhRpcConsumer;
+import com.hhrpc.hhrpc.core.api.Router;
+import com.hhrpc.hhrpc.core.cluster.GrayRouter;
 import com.hhrpc.hhrpc.core.conf.ConsumerConf;
+import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.demo.api.Order;
 import com.hhrpc.hhrpc.demo.api.OrderService;
 import com.hhrpc.hhrpc.demo.api.User;
 import com.hhrpc.hhrpc.demo.api.UserService;
+import jakarta.annotation.Resource;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,13 +36,22 @@ public class HhrpcDemoConsumerApplication {
     private OrderService orderService;
 
     @RequestMapping(value = "/")
-    public User findUserById(int id) {
+    public User findUserById(@RequestParam("id") int id) {
         return this.userService.findById(id);
     }
 
     @RequestMapping(value = "/findUserTimeout")
     public User findUserTimeout(@RequestParam("timeout") long timeout) {
         return this.userService.findTimeout(timeout);
+    }
+
+    @Resource
+    private Router<InstanceMeta> router;
+
+    @RequestMapping(value = "/updateGrayRatio")
+    public Integer updateGrayRatio(@RequestParam("grayRatio") Integer grayRatio) {
+        ((GrayRouter)router).setGrayRatio(grayRatio);
+        return grayRatio;
     }
 
     public static void main(String[] args) {

@@ -13,6 +13,8 @@ app:
   namespace: public
   env: dev
   retries: 2
+  # 灰度流量占比（0-100）
+  grayRatio: 10
 
 logging:
   level:
