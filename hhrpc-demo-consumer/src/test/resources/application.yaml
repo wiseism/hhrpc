@@ -12,6 +12,8 @@ app:
   id: hhrpc
   namespace: public
   env: dev
+  # 灰度流量占比（0-100）
+  grayRatio: 10
 
 logging:
   level:
