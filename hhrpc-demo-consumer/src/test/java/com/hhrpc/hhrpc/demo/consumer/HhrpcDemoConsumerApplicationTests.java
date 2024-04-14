@@ -26,7 +26,7 @@ public class HhrpcDemoConsumerApplicationTests {
         try {
             testingServer = new TestingServer(2182);
             providerApplicationContext = SpringApplication.run(HhrpcDemoProviderApplication.class, new String[]{
-                    "--server.port=8085", "--hhrpc.zkservers=localhost:2182"
+                    "--server.port=8085", "--hhrpc.zk.servers=localhost:2182"
             });
         }catch (Exception e) {
             throw new RuntimeException(e);
