@@ -26,7 +26,7 @@ public class ProviderInvoker {
         result.setStatus(false);
         try {
             if (Objects.nonNull(rpcRequest.getParameters()) && !rpcRequest.getParameters().isEmpty()) {
-                RpcContent.contextParameters.get().putAll(rpcRequest.getParameters());
+                RpcContext.contextParameters.get().putAll(rpcRequest.getParameters());
             }
             ProviderMeta providerMeta = fetchProviderMeta(rpcRequest);
             Method method = providerMeta.getMethod();

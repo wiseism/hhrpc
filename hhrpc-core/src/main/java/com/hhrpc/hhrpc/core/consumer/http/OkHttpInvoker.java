@@ -19,11 +19,15 @@ public class OkHttpInvoker implements HttpInvoker {
     private final OkHttpClient client;
 
     public OkHttpInvoker() {
+        this(1_000L);
+    }
+
+    public OkHttpInvoker(long timeout) {
         client = new OkHttpClient.Builder()
                 .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS))
-                .connectTimeout(1, TimeUnit.SECONDS)
-                .readTimeout(1, TimeUnit.SECONDS)
-                .writeTimeout(1, TimeUnit.SECONDS)
+                .connectTimeout(timeout, TimeUnit.MILLISECONDS)
+                .readTimeout(timeout, TimeUnit.MILLISECONDS)
+                .writeTimeout(timeout, TimeUnit.MILLISECONDS)
                 .build();
     }
     @Override

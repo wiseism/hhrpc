@@ -13,7 +13,7 @@ import java.util.Map;
  * @Date 2024/3/22
  * @Author lifei
  */
-public class RpcContent {
+public class RpcContext {
     private List<Filter> filterList;
     private Router<InstanceMeta> router;
     private LoadBalance<InstanceMeta> loadBalance;
@@ -36,13 +36,16 @@ public class RpcContent {
         return contextParameters.get().get(key);
     }
 
-    public RpcContent() {
-    }
+    public RpcContext() {}
 
-    public RpcContent(Router<InstanceMeta> router, LoadBalance<InstanceMeta> loadBalance, HttpInvoker httpInvoker) {
+    public RpcContext(Router<InstanceMeta> router, LoadBalance<InstanceMeta> loadBalance, HttpInvoker httpInvoker) {
         this.router = router;
         this.loadBalance = loadBalance;
         this.httpInvoker = httpInvoker;
+    }
+
+    public String param(String key) {
+        return parameters.get(key);
     }
 
     public List<Filter> getFilterList() {
@@ -87,7 +90,7 @@ public class RpcContent {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(RpcContent.class)
+        return MoreObjects.toStringHelper(RpcContext.class)
                 .add("filterList", filterList)
                 .add("router", router)
                 .add("loadBalance", loadBalance)

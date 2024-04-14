@@ -35,11 +35,14 @@ public class ZkRegisterCenter implements RegisterCenter {
     private CuratorFramework client;
     private TreeCache treeCache;
 
-    @Value("${hhrpc.zkservers}")
-    private String zkServers;
+    private final String zkServers;
+    private final String zkRoot;
 
-    @Value("${hhrpc.zkroot}")
-    private String zkRoot;
+    public ZkRegisterCenter(String zkServers, String zkRoot) {
+        this.zkServers = zkServers;
+        this.zkRoot = zkRoot;
+    }
+
 
     @Override
     public void start() {

@@ -5,6 +5,8 @@ import com.hhrpc.hhrpc.core.provider.ProviderBootStarp;
 import com.hhrpc.hhrpc.core.provider.ProviderInvoker;
 import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
 import com.hhrpc.hhrpc.core.transport.SpringBootTransport;
+import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,17 +18,32 @@ import org.springframework.core.annotation.Order;
  * @Author lifei
  */
 @Configuration
-@Import({ProviderGrayConf.class, SpringBootTransport.class})
+@Import({ProviderGrayConf.class, SpringBootTransport.class, AppParametersConf.class})
 public class ProviderConf {
+
+    @Value("${server.port:8081}")
+    private Integer port;
+
+    @Value("${hhrpc.zk.servers:localhost:2181}")
+    private String zkServers;
+
+    @Value("${hhrpc.zk.root:hhrpc}")
+    private String zkRoot;
+
+    @Resource
+    private ProviderGrayConf providerGrayConf;
+
+    @Resource
+    private AppParametersConf appParametersConf;
 
     @Bean
     public ProviderBootStarp providerBootStarp() {
-        return new ProviderBootStarp();
+        return new ProviderBootStarp(port, providerGrayConf, appParametersConf);
     }
 
     @Bean//(initMethod = "start", destroyMethod = "stop")
     public RegisterCenter registerCenter() {
-        return new ZkRegisterCenter();
+        return new ZkRegisterCenter(zkServers, zkRoot);
     }
 
     @Bean

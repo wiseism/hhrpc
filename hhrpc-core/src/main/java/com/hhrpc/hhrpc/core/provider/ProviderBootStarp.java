@@ -2,6 +2,7 @@ package com.hhrpc.hhrpc.core.provider;
 
 import com.hhrpc.hhrpc.core.annotation.HhRpcProvider;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
+import com.hhrpc.hhrpc.core.conf.AppParametersConf;
 import com.hhrpc.hhrpc.core.conf.ProviderGrayConf;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.meta.ProviderMeta;
@@ -26,21 +27,23 @@ import java.util.Map;
  * @Date 2024/3/9
  * @Author lifei
  */
-public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAware {
+public class ProviderBootStarp implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-    private Environment environment;
     private MultiValueMap<String, ProviderMeta> serviceMap = new LinkedMultiValueMap<>();
 
     private InstanceMeta instanceMeta;
     private RegisterCenter registerCenter;
 
-    private String app;
-    private String namespace;
-    private String env;
+    private final Integer port;
+    private final ProviderGrayConf providerGrayConf;
+    private final AppParametersConf appParametersConf;
 
-    @Resource
-    private ProviderGrayConf providerGrayConf;
+    public ProviderBootStarp(Integer port, ProviderGrayConf providerGrayConf, AppParametersConf appParametersConf) {
+        this.port = port;
+        this.providerGrayConf = providerGrayConf;
+        this.appParametersConf = appParametersConf;
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -76,10 +79,6 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
 
     private InstanceMeta createInstanceMeta() {
         try {
-            Integer port = Integer.valueOf(environment.getProperty("server.port", "8081"));
-            app = environment.getProperty("app.id");
-            namespace = environment.getProperty("app.namespace");
-            env = environment.getProperty("app.env");
             String hostAddress = InetAddress.getLocalHost().getHostAddress();
             InstanceMeta result = InstanceMeta.builder()
                     .schema("http")
@@ -116,9 +115,9 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
 
     private ServiceMeta createServiceMeta(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
-                .namespace(namespace)
-                .app(app)
-                .env(env)
+                .namespace(appParametersConf.getNamespace())
+                .app(appParametersConf.getId())
+                .env(appParametersConf.getEnv())
                 .name(service)
                 .build();
         return serviceMeta;
@@ -129,12 +128,6 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
         serviceMap.keySet().forEach(service->{
             registerCenter.unregister(createServiceMeta(service), instanceMeta);
         });
-    }
-
-
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
     }
 
     public MultiValueMap<String, ProviderMeta> getServiceMap() {

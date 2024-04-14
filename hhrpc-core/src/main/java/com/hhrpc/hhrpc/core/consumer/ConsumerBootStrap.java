@@ -1,6 +1,5 @@
 package com.hhrpc.hhrpc.core.consumer;
 
-import com.google.common.collect.Lists;
 import com.hhrpc.hhrpc.core.annotation.HhRpcConsumer;
 import com.hhrpc.hhrpc.core.api.*;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
@@ -9,8 +8,6 @@ import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -21,14 +18,10 @@ import java.util.*;
  * @Date 2024/3/12
  * @Author lifei
  */
-public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAware {
+public class ConsumerBootStrap implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-    private Environment environment;
     private Map<String, Object> proxyMap = new HashMap<>();
-    private String app;
-    private String namespace;
-    private String env;
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -37,18 +30,8 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
 
     public void start() throws IllegalAccessException {
         RegisterCenter registerCenter = applicationContext.getBean(RegisterCenter.class);
-        Router router = applicationContext.getBean(Router.class);
-        LoadBalance loadBalance = applicationContext.getBean(LoadBalance.class);
-        HttpInvoker httpInvoker = applicationContext.getBean(HttpInvoker.class);
-        List<Filter> filterList = Lists.newArrayList(applicationContext.getBeansOfType(Filter.class).values());
-        RpcContent rpcContent = new RpcContent(router, loadBalance, httpInvoker);
-        rpcContent.setFilterList(filterList);
+        RpcContext rpcContext = applicationContext.getBean(RpcContext.class);
         String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-        app = environment.getProperty("app.id");
-        namespace = environment.getProperty("app.namespace");
-        env = environment.getProperty("app.env");
-        int retries = Integer.parseInt(environment.getProperty("app.retries", "2"));
-        rpcContent.getParameters().put("app.retries", String.valueOf(retries));
         for (String beanDefinitionName : beanDefinitionNames) {
             Object bean = applicationContext.getBean(beanDefinitionName);
             // 获取这个bean中，所有带有 @HhRpcConsumer 注解的字段
@@ -62,7 +45,7 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
                 if (proxyMap.containsKey(serviceName)) {
                     targetObj = proxyMap.get(serviceName);
                 } else {
-                    targetObj = createProxyObject(field.getType(), rpcContent, registerCenter);
+                    targetObj = createProxyObject(field.getType(), rpcContext, registerCenter);
                     proxyMap.put(serviceName, targetObj);
                 }
                 field.setAccessible(true);
@@ -75,24 +58,20 @@ public class ConsumerBootStrap implements ApplicationContextAware, EnvironmentAw
      * 创建代理对象
      * @return
      */
-    private Object createProxyObject(Class<?> clazz, RpcContent rpcContent, RegisterCenter registerCenter) {
+    private Object createProxyObject(Class<?> clazz, RpcContext rpcContext, RegisterCenter registerCenter) {
         String serviceName = clazz.getCanonicalName();
         ServiceMeta serviceMeta = ServiceMeta.builder()
                 .name(serviceName)
-                .env(env)
-                .namespace(namespace)
-                .app(app).build();
+                .env(rpcContext.param("app.env"))
+                .namespace(rpcContext.param("app.namespace"))
+                .app(rpcContext.param("app.id")).build();
         List<InstanceMeta> instanceMetaList = registerCenter.findAll(serviceMeta);
         registerCenter.subscribe(serviceMeta, (event)->{
             instanceMetaList.clear();
             instanceMetaList.addAll(event.getData());
         });
         return Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz},
-                new HhRpcConsumerInvocationHandler(clazz.getCanonicalName(), rpcContent, instanceMetaList));
+                new HhRpcConsumerInvocationHandler(clazz.getCanonicalName(), rpcContext, instanceMetaList));
     }
 
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
-    }
 }

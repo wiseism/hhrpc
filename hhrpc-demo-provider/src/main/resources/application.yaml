@@ -2,14 +2,16 @@ server:
   port: 8081
 
 hhrpc:
-  zkservers: localhost:2181
-  zkroot: hhrpc
+  zk:
+    servers: localhost:2181
+    root: hhrpc
+  app:
+    id: hhrpc
+    namespace: public
+    env: dev
+  provider:
+    metas:
+      gray: false
+      bc: bj
+      union: B001
 
-app:
-  id: hhrpc
-  namespace: public
-  env: dev
-  metas:
-    gray: false
-    bc: bj
-    union: B001

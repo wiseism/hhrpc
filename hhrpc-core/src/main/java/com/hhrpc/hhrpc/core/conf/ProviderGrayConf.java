@@ -11,7 +11,7 @@ import java.util.Map;
  * @Author lifei
  */
 @Configuration
-@ConfigurationProperties(prefix = "app")
+@ConfigurationProperties(prefix = "hhrpc.provider")
 public class ProviderGrayConf {
 
     private Map<String, String> metas = Maps.newHashMap();

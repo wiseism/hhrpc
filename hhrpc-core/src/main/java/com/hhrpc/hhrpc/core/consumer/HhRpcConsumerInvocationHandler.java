@@ -27,7 +27,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(HhRpcConsumerInvocationHandler.class);
 
     private final String serviceName;
-    private RpcContent rpcContent;
+    private RpcContext rpcContext;
     private List<InstanceMeta> providers;
     // 隔离的providers
     private Set<InstanceMeta> isolatedProviders = Sets.newHashSet();
@@ -37,12 +37,14 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
     private Map<String, SlidingTimeWindow> slidingTimeWindowMap = new HashMap<>();
     private final ScheduledExecutorService scheduledExecutorService;
 
-    public HhRpcConsumerInvocationHandler(String serviceName, RpcContent rpcContent, List<InstanceMeta> providers) {
+    public HhRpcConsumerInvocationHandler(String serviceName, RpcContext rpcContext, List<InstanceMeta> providers) {
         this.serviceName = serviceName;
-        this.rpcContent = rpcContent;
+        this.rpcContext = rpcContext;
         this.providers = providers;
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::halfOpen, 10, 30, TimeUnit.SECONDS);
+        long initDelay = Long.parseLong(rpcContext.param("consumer.halfOpenInitDelay"));
+        long delay = Long.parseLong(rpcContext.param("consumer.halfOpenDelay"));
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::halfOpen, initDelay, delay, TimeUnit.MILLISECONDS);
     }
 
     public void halfOpen() {
@@ -61,13 +63,14 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
         if (HhrpcMethodUtils.checkLocalMethod(method)){
             return null;
         }
-        int retries = Integer.parseInt(rpcContent.getParameters().get("app.retries"));
+        int retries = Integer.parseInt(rpcContext.param("consumer.retries"));
+        int faultLimit = Integer.parseInt(rpcContext.param("consumer.faultLimit"));
         String url = null;
         Object result = null;
         while (retries-- >0) {
             try {
                 log.debug("===> reties: {}", retries);
-                List<Filter> filterList = rpcContent.getFilterList();
+                List<Filter> filterList = rpcContext.getFilterList();
                 for (Filter filter : filterList) {
                     result = filter.preFilter(request);
                     if (Objects.nonNull(result)) {
@@ -80,7 +83,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
                 try {
                     synchronized (halfOpenProviders) {
                         if (halfOpenProviders.isEmpty()) {
-                            instanceMeta = rpcContent.getLoadBalance().choose(rpcContent.getRouter().rout(providers));
+                            instanceMeta = rpcContext.getLoadBalance().choose(rpcContext.getRouter().rout(providers));
                         } else {
                             instanceMeta = halfOpenProviders.remove(0);
                             log.debug("===> try life instance: {}", instanceMeta);
@@ -88,7 +91,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
                     }
                     url = instanceMeta.toUrl();
                     log.debug("===> url: " + url);
-                    rpcResponse = rpcContent.getHttpInvoker().post(request, url);
+                    rpcResponse = rpcContext.getHttpInvoker().post(request, url);
                     if (!rpcResponse.getStatus()) {
                         HhRpcExceptionEnum hhRpcExceptionEnum = HhRpcExceptionEnum.findHhRpcExceptionEnum(rpcResponse.getErrorCode());
                         throw new HhRpcException(hhRpcExceptionEnum.getErrorMessage());
@@ -100,7 +103,7 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
                     slidingTimeWindow.record(System.currentTimeMillis());
                     int sum = slidingTimeWindow.getSum();
                     log.debug("===> url({}) fault count: {}" , url, sum);
-                    if (sum>=10) {
+                    if (sum>=faultLimit) {
                         isolated(instanceMeta);
                     }
                     throw e;
@@ -152,8 +155,8 @@ public class HhRpcConsumerInvocationHandler implements InvocationHandler {
      */
     private RpcResponse getRpcResponse(RpcRequest request, Method method) {
         try {
-            InstanceMeta instanceMeta = rpcContent.getLoadBalance().choose(rpcContent.getRouter().rout(providers));
-            RpcResponse<?> rpcResponse = rpcContent.getHttpInvoker().post(request, instanceMeta.toUrl());
+            InstanceMeta instanceMeta = rpcContext.getLoadBalance().choose(rpcContext.getRouter().rout(providers));
+            RpcResponse<?> rpcResponse = rpcContext.getHttpInvoker().post(request, instanceMeta.toUrl());
             RpcResponse result = TypeUtils.getRpcResponse(method, rpcResponse);
             return result;
         }catch (Exception e) {

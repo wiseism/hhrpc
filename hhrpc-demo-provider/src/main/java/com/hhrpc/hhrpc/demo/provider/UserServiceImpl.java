@@ -3,14 +3,13 @@ package com.hhrpc.hhrpc.demo.provider;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import com.hhrpc.hhrpc.core.annotation.HhRpcProvider;
-import com.hhrpc.hhrpc.core.api.RpcContent;
+import com.hhrpc.hhrpc.core.api.RpcContext;
 import com.hhrpc.hhrpc.demo.api.User;
 import com.hhrpc.hhrpc.demo.api.UserService;
 import jakarta.annotation.Resource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -75,7 +74,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String echoContextParameter(String key) {
         System.out.println("===> RpcContext parameters: ");
-        RpcContent.contextParameters.get().forEach((k, v) -> System.out.println(k + "=" + v));
-        return RpcContent.getContextParameter(key);
+        RpcContext.contextParameters.get().forEach((k, v) -> System.out.println(k + "=" + v));
+        return RpcContext.getContextParameter(key);
     }
 }

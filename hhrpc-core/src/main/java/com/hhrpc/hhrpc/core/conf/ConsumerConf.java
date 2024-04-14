@@ -1,37 +1,43 @@
 package com.hhrpc.hhrpc.core.conf;
 
-import com.hhrpc.hhrpc.core.api.Filter;
-import com.hhrpc.hhrpc.core.api.LoadBalance;
-import com.hhrpc.hhrpc.core.api.RegisterCenter;
-import com.hhrpc.hhrpc.core.api.Router;
+import com.hhrpc.hhrpc.core.api.*;
 import com.hhrpc.hhrpc.core.cluster.GrayRouter;
 import com.hhrpc.hhrpc.core.cluster.RoundBionLoadBalance;
 import com.hhrpc.hhrpc.core.consumer.ConsumerBootStrap;
 import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
 import com.hhrpc.hhrpc.core.consumer.http.OkHttpInvoker;
-import com.hhrpc.hhrpc.core.filter.CacheFilter;
-import com.hhrpc.hhrpc.core.filter.MockFilter;
 import com.hhrpc.hhrpc.core.filter.ParameterFilter;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
+
+import java.util.List;
 
 /**
  * @Date 2024/3/12
  * @Author lifei
  */
 @Configuration
+@Import({AppParametersConf.class, ConsumerBusConf.class})
 public class ConsumerConf {
 
     @Value("${hhrpc.providers}")
     private String urls;
 
-    @Value("${app.grayRatio}")
-    private Integer grayRatio;
+    @Resource
+    private ConsumerBusConf consumerBusConf;
+
+    @Value("${hhrpc.zk.servers:localhost:2181}")
+    private String zkServers;
+
+    @Value("${hhrpc.zk.root:hhrpc}")
+    private String zkRoot;
 
     @Bean
     public ConsumerBootStrap consumerBootStrap() {
@@ -48,7 +54,7 @@ public class ConsumerConf {
 
     @Bean
     public Router<InstanceMeta> router() {
-        return new GrayRouter(grayRatio);
+        return new GrayRouter(consumerBusConf.getGrayRatio());
     }
 
     @Bean
@@ -59,13 +65,13 @@ public class ConsumerConf {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public RegisterCenter registerCenter() {
-       return new ZkRegisterCenter();
+       return new ZkRegisterCenter(zkServers, zkRoot);
     }
 
 
     @Bean
     public HttpInvoker httpInvoker() {
-        return new OkHttpInvoker();
+        return new OkHttpInvoker(consumerBusConf.getTimeout());
     }
 
     @Bean
@@ -83,4 +89,25 @@ public class ConsumerConf {
 //        return new CacheFilter();
 ////        return new MockFilter();
 //    }
+
+    @Bean
+    public RpcContext rpcContent(List<Filter> filterList,
+                                 Router<InstanceMeta> router,
+                                 LoadBalance<InstanceMeta> loadBalance,
+                                 HttpInvoker httpInvoker, AppParametersConf appParametersConf) {
+        RpcContext rpcContext = new RpcContext();
+        rpcContext.setFilterList(filterList);
+        rpcContext.setRouter(router);
+        rpcContext.setLoadBalance(loadBalance);
+        rpcContext.setHttpInvoker(httpInvoker);
+        rpcContext.getParameters().put("consumer.retries", String.valueOf(consumerBusConf.getRetries()));
+        rpcContext.getParameters().put("consumer.faultLimit", String.valueOf(consumerBusConf.getFaultLimit()));
+        rpcContext.getParameters().put("consumer.halfOpenInitDelay", String.valueOf(consumerBusConf.getHalfOpenInitDelay()));
+        rpcContext.getParameters().put("consumer.halfOpenDelay", String.valueOf(consumerBusConf.getHalfOpenDelay()));
+        rpcContext.getParameters().put("consumer.timeout", String.valueOf(consumerBusConf.getTimeout()));
+        rpcContext.getParameters().put("app.id", appParametersConf.getId());
+        rpcContext.getParameters().put("app.namespace", appParametersConf.getNamespace());
+        rpcContext.getParameters().put("app.env", appParametersConf.getEnv());
+        return rpcContext;
+    }
 }

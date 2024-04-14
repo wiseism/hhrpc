@@ -6,15 +6,23 @@ server:
 
 hhrpc:
   providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
-  zkservers: localhost:2181
-  zkroot: hhrpc
-app:
-  id: hhrpc
-  namespace: public
-  env: dev
-  retries: 2
-  # 灰度流量占比（0-100）
-  grayRatio: 10
+  zk:
+    servers: localhost:2181
+    root: hhrpc
+  app:
+    id: hhrpc
+    namespace: public
+    env: dev
+  consumer:
+    retries: 2
+    # 灰度流量占比（0-100）
+    grayRatio: 10
+    faultLimit: 10
+    halfOpenInitDelay: 10_000
+    halfOpenDelay: 60_000
+    timeout: 1_000
+
+
 
 logging:
   level:
