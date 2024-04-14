@@ -3,6 +3,7 @@ package com.hhrpc.hhrpc.demo.provider;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import com.hhrpc.hhrpc.core.annotation.HhRpcProvider;
+import com.hhrpc.hhrpc.core.api.RpcContent;
 import com.hhrpc.hhrpc.demo.api.User;
 import com.hhrpc.hhrpc.demo.api.UserService;
 import jakarta.annotation.Resource;
@@ -69,5 +70,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateTimeoutPorts(String ports) {
         this.timeoutPorts = Optional.ofNullable(ports).orElse("");
+    }
+
+    @Override
+    public String echoContextParameter(String key) {
+        System.out.println("===> RpcContext parameters: ");
+        RpcContent.contextParameters.get().forEach((k, v) -> System.out.println(k + "=" + v));
+        return RpcContent.getContextParameter(key);
     }
 }

@@ -2,6 +2,7 @@ package com.hhrpc.hhrpc.demo.consumer;
 
 import com.hhrpc.hhrpc.core.annotation.HhRpcConsumer;
 import com.hhrpc.hhrpc.core.api.Router;
+import com.hhrpc.hhrpc.core.api.RpcContent;
 import com.hhrpc.hhrpc.core.cluster.GrayRouter;
 import com.hhrpc.hhrpc.core.conf.ConsumerConf;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
@@ -92,5 +93,13 @@ public class HhrpcDemoConsumerApplication {
         }catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        System.out.println("===> 测试跨客户端和服务端的参数：");
+        RpcContent.putContextParameter("tokenId", "001");
+        RpcContent.putContextParameter("username", "aaa-002");
+        String tokenId = userService.echoContextParameter("tokenId");
+        System.out.println(tokenId);
+        // 为了避免线程复用导致RpcContext参数串了，需要使用后清理
+        RpcContent.contextParameters.get().clear();
+
     }
 }

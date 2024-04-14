@@ -1,6 +1,7 @@
 package com.hhrpc.hhrpc.core.api;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Maps;
 import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 
@@ -19,6 +20,21 @@ public class RpcContent {
     private Map<String, String> parameters = new HashMap<>();
 
     private HttpInvoker httpInvoker;
+
+    public static ThreadLocal<Map<String, String>> contextParameters = new ThreadLocal<>(){
+        @Override
+        protected Map<String, String> initialValue() {
+            return Maps.newHashMap();
+        }
+    };
+
+    public static void putContextParameter(String key, String value) {
+        contextParameters.get().put(key, value);
+    }
+
+    public static String getContextParameter(String key) {
+        return contextParameters.get().get(key);
+    }
 
     public RpcContent() {
     }

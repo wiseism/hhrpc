@@ -1,15 +1,13 @@
 package com.hhrpc.hhrpc.core.provider;
 
-import com.hhrpc.hhrpc.core.api.HhRpcException;
-import com.hhrpc.hhrpc.core.api.HhRpcExceptionEnum;
-import com.hhrpc.hhrpc.core.api.RpcRequest;
-import com.hhrpc.hhrpc.core.api.RpcResponse;
+import com.hhrpc.hhrpc.core.api.*;
 import com.hhrpc.hhrpc.core.meta.ProviderMeta;
 import com.hhrpc.hhrpc.core.utils.TypeUtils;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * @Date 2024/3/24
@@ -27,6 +25,9 @@ public class ProviderInvoker {
         RpcResponse<Object> result = new RpcResponse<>();
         result.setStatus(false);
         try {
+            if (Objects.nonNull(rpcRequest.getParameters()) && !rpcRequest.getParameters().isEmpty()) {
+                RpcContent.contextParameters.get().putAll(rpcRequest.getParameters());
+            }
             ProviderMeta providerMeta = fetchProviderMeta(rpcRequest);
             Method method = providerMeta.getMethod();
             Object[] args = TypeUtils.processArgs(rpcRequest.getArgs(), method.getParameterTypes(), method.getGenericParameterTypes());
