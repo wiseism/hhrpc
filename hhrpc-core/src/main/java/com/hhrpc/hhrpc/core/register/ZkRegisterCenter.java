@@ -115,6 +115,7 @@ public class ZkRegisterCenter implements RegisterCenter {
                             .schema("http")
                             .host(node.split("_")[0])
                             .port(Integer.valueOf(node.split("_")[1]))
+                            .context(node.split("_")[2])
                             .build();
                     String path = Strings.lenientFormat("%s/%s", servicePath, node);
                     byte[] bytes;

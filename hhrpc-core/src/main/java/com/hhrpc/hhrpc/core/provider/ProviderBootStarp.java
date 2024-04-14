@@ -85,6 +85,7 @@ public class ProviderBootStarp implements ApplicationContextAware, EnvironmentAw
                     .schema("http")
                     .host(hostAddress)
                     .port(port)
+                    .context("hhrpc")
                     .build();
             result.getParameters().putAll(providerGrayConf.getMetas());
             return result;

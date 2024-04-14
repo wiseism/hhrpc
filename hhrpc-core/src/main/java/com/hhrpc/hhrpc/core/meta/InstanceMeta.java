@@ -34,11 +34,11 @@ public class InstanceMeta {
     }
 
     public String toPath() {
-        return Strings.lenientFormat("%s_%s", host, port);
+        return Strings.lenientFormat("%s_%s_%s", host, port, context);
     }
 
     public String toUrl() {
-        return Strings.lenientFormat("%s://%s:%s/", schema, host, port);
+        return Strings.lenientFormat("%s://%s:%s/%s", schema, host, port, context);
     }
 
     public static class Builder{

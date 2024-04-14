@@ -4,6 +4,7 @@ import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.provider.ProviderBootStarp;
 import com.hhrpc.hhrpc.core.provider.ProviderInvoker;
 import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
+import com.hhrpc.hhrpc.core.transport.SpringBootTransport;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,7 @@ import org.springframework.core.annotation.Order;
  * @Author lifei
  */
 @Configuration
-@Import(ProviderGrayConf.class)
+@Import({ProviderGrayConf.class, SpringBootTransport.class})
 public class ProviderConf {
 
     @Bean
