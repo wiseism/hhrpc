@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.hhrpc</groupId>
     <artifactId>hhrpc</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${hhrpc.version}</version>
     <name>hhrpc</name>
     <description>hhrpc</description>
     <packaging>pom</packaging>
@@ -15,6 +15,7 @@
         <springboot.version>3.2.3</springboot.version>
         <maven-surefire-plugin.version>3.2.3</maven-surefire-plugin.version>
         <junit.version>4.13.2</junit.version>
+        <hhrpc.version>0.0.1-SNAPSHOT</hhrpc.version>
     </properties>
 
     <modules>
@@ -23,5 +24,36 @@
         <module>hhrpc-demo-provider</module>
         <module>hhrpc-demo-consumer</module>
     </modules>
+
+    <build>
+        <plugins>
+            <!--            将包扁平化 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>oss</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <phase>clean</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -8,6 +8,7 @@ import com.hhrpc.hhrpc.core.transport.SpringBootTransport;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -41,7 +42,8 @@ public class ProviderConf {
         return new ProviderBootStarp(port, providerGrayConf, appParametersConf);
     }
 
-    @Bean//(initMethod = "start", destroyMethod = "stop")
+    @Bean(initMethod = "start")
+    @ConditionalOnMissingBean
     public RegisterCenter registerCenter() {
         return new ZkRegisterCenter(zkServers, zkRoot);
     }

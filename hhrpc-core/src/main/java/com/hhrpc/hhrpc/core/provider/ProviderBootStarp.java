@@ -96,7 +96,7 @@ public class ProviderBootStarp implements ApplicationContextAware {
     public void start() {
         // 启动zk
         registerCenter = applicationContext.getBean(RegisterCenter.class);
-        registerCenter.start();
+//        registerCenter.start();
         // 注册
         register();
     }

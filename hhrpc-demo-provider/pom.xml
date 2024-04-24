@@ -5,10 +5,10 @@
     <parent>
         <groupId>com.hhrpc</groupId>
         <artifactId>hhrpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${hhrpc.version}</version>
     </parent>
     <artifactId>hhrpc-demo-provider</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${hhrpc.version}</version>
     <name>hhrpc-demo-provider</name>
     <description>hhrpc-demo-provider</description>
     <dependencyManagement>
@@ -26,12 +26,12 @@
         <dependency>
             <groupId>com.hhrpc</groupId>
             <artifactId>hhrpc-core</artifactId>
-            <version>${project.version}</version>
+            <version>${hhrpc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hhrpc</groupId>
             <artifactId>hhrpc-demo-api</artifactId>
-            <version>${project.version}</version>
+            <version>${hhrpc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

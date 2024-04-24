@@ -5,10 +5,10 @@
     <parent>
         <groupId>com.hhrpc</groupId>
         <artifactId>hhrpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${hhrpc.version}</version>
     </parent>
     <artifactId>hhrpc-demo-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${hhrpc.version}</version>
     <name>hhrpc-demo-api</name>
     <description>hhrpc-demo-api</description>
     <dependencies>
