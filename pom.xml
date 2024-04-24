@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.hhrpc</groupId>
+    <groupId>io.gitee.hefren</groupId>
     <artifactId>hhrpc</artifactId>
     <version>${hhrpc.version}</version>
     <name>hhrpc</name>
@@ -44,7 +44,7 @@
         <springboot.version>3.2.3</springboot.version>
         <maven-surefire-plugin.version>3.2.3</maven-surefire-plugin.version>
         <junit.version>4.13.2</junit.version>
-        <hhrpc.version>0.0.1-SNAPSHOT</hhrpc.version>
+        <hhrpc.version>0.0.2</hhrpc.version>
     </properties>
 
     <modules>
