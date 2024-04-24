@@ -8,6 +8,35 @@
     <name>hhrpc</name>
     <description>hhrpc</description>
     <packaging>pom</packaging>
+    <url>https://gitee.com/hefren/hhrpc</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>github</system>
+        <url>https://gitee.com/hefren/hhrpc/issues</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:https://gitee.com/hefren/hhrpc.git</connection>
+        <developerConnection>scm:git:https://gitee.com/hefren/hhrpc.git</developerConnection>
+        <url>https://gitee.com/hefren/hhrpc</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>hefrankeleyn</name>
+            <email>hefrankeleyn@163.com</email>
+            <url>https://gitee.com/hefren/hhrpc</url>
+        </developer>
+    </developers>
+
     <properties>
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -53,7 +82,94 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!--            打包源码-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.1.0</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludeResources>true</excludeResources>
+                    <useDefaultExcludes>true</useDefaultExcludes>
+                </configuration>
+            </plugin>
+            <!--            打包javadoc-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.0</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>bundle-sources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <maxmemory>1024</maxmemory>
+                    <encoding>UTF-8</encoding>
+                    <show>protected</show>
+                    <notree>true</notree>
+                    <!-- Avoid running into Java 8's very restrictive doclint issues -->
+                    <failOnError>false</failOnError>
+                    <doclint>none</doclint>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+<!--        发布：     https://central.sonatype.org/publish/publish-portal-maven/      -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.4.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <tokenAuth>true</tokenAuth>
+                            <autoPublish>true</autoPublish>
+                            <excludeArtifacts>
+                                <excludeArtifact>hhrpc-demo-api</excludeArtifact>
+                                <excludeArtifact>hhrpc-demo-provider</excludeArtifact>
+                                <excludeArtifact>hhrpc-demo-consumer</excludeArtifact>
+                            </excludeArtifacts>
+                        </configuration>
+                    </plugin>
+<!--                    GPG 签名-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
