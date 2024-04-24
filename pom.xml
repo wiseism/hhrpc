@@ -44,7 +44,7 @@
         <springboot.version>3.2.3</springboot.version>
         <maven-surefire-plugin.version>3.2.3</maven-surefire-plugin.version>
         <junit.version>4.13.2</junit.version>
-        <hhrpc.version>0.0.3</hhrpc.version>
+        <hhrpc.version>0.0.4</hhrpc.version>
     </properties>
 
     <modules>
