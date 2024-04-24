@@ -28,7 +28,7 @@ import java.util.List;
 @Import({AppParametersConf.class, ConsumerBusConf.class})
 public class ConsumerConf {
 
-    @Value("${hhrpc.providers}")
+    @Value("${hhrpc.providers:http://localhost:8081,http://localhost:8082,http://localhost:8083}")
     private String urls;
 
     @Resource
