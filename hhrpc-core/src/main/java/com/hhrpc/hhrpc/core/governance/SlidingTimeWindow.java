@@ -33,7 +33,7 @@ public class SlidingTimeWindow {
         long ts = tms/1000;
         if (preTime == -1) {
             initRing(ts);
-        } else if (ts > currentTime && ts < currentTime + size) {
+        } else if (ts >= currentTime && ts < currentTime + size) {
             int offset = (int)(ts - currentTime);
             int beginIndex = currentIndex + 1;
             int endIndex = beginIndex + offset;
@@ -58,5 +58,23 @@ public class SlidingTimeWindow {
 
     public int getSum() {
         return sum;
+    }
+
+    public int calcSum() {
+        // 毫秒变成秒
+        long ts = System.currentTimeMillis()/1000;
+        if (ts >= currentTime && ts < currentTime + size) {
+            int offset = (int)(ts - currentTime);
+            int beginIndex = currentIndex + 1;
+            int endIndex = beginIndex + offset;
+            this.ringBuffer.reset(beginIndex, endIndex);
+            this.currentIndex = (this.currentIndex + offset) % this.size;
+            this.preTime = this.currentTime;
+            this.currentTime = ts;
+        } else if (ts > currentTime + size){
+            this.ringBuffer.reset();
+            initRing(ts);
+        }
+        return this.ringBuffer.sum();
     }
 }

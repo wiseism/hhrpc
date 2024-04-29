@@ -3,19 +3,16 @@ package com.hhrpc.hhrpc.core.provider;
 import com.hhrpc.hhrpc.core.annotation.HhRpcProvider;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.conf.AppParametersConf;
-import com.hhrpc.hhrpc.core.conf.ProviderGrayConf;
+import com.hhrpc.hhrpc.core.conf.ProviderBusConf;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.meta.ProviderMeta;
 import com.hhrpc.hhrpc.core.meta.ServiceMeta;
 import com.hhrpc.hhrpc.core.utils.HhrpcMethodUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import jakarta.annotation.Resource;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -36,12 +33,12 @@ public class ProviderBootStarp implements ApplicationContextAware {
     private RegisterCenter registerCenter;
 
     private final Integer port;
-    private final ProviderGrayConf providerGrayConf;
+    private final ProviderBusConf providerBusConf;
     private final AppParametersConf appParametersConf;
 
-    public ProviderBootStarp(Integer port, ProviderGrayConf providerGrayConf, AppParametersConf appParametersConf) {
+    public ProviderBootStarp(Integer port, ProviderBusConf providerBusConf, AppParametersConf appParametersConf) {
         this.port = port;
-        this.providerGrayConf = providerGrayConf;
+        this.providerBusConf = providerBusConf;
         this.appParametersConf = appParametersConf;
     }
 
@@ -86,7 +83,7 @@ public class ProviderBootStarp implements ApplicationContextAware {
                     .port(port)
                     .context("hhrpc")
                     .build();
-            result.getParameters().putAll(providerGrayConf.getMetas());
+            result.getParameters().putAll(providerBusConf.getMetas());
             return result;
         }catch (Exception e) {
             throw new RuntimeException(e);
@@ -132,5 +129,9 @@ public class ProviderBootStarp implements ApplicationContextAware {
 
     public MultiValueMap<String, ProviderMeta> getServiceMap() {
         return serviceMap;
+    }
+
+    public ProviderBusConf getProviderBusConf() {
+        return providerBusConf;
     }
 }

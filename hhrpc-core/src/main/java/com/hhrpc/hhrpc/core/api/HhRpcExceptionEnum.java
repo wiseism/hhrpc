@@ -5,6 +5,7 @@ import java.util.Objects;
 public enum HhRpcExceptionEnum {
     X001("X001", "method_not_found"),
     X002("X002", "http_invoker_timeout"),
+    X003("X003", "limitRequest"),
     Z001("Z001", "unknown"),
     ;
 

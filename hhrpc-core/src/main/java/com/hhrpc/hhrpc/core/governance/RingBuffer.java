@@ -33,6 +33,13 @@ public class RingBuffer {
      * @param endIndex
      */
     public void reset(int beginIndex, int endIndex) {
-        Arrays.fill(ring, beginIndex%size, endIndex%size, 0);
+        int fromIndex = beginIndex%size;
+        int toIndex = endIndex%size;
+        if (fromIndex < toIndex) {
+            Arrays.fill(ring, fromIndex, toIndex, 0);
+        } else if (fromIndex > toIndex) {
+            Arrays.fill(ring, fromIndex, size, 0);
+            Arrays.fill(ring, 0, toIndex, 0);
+        }
     }
 }

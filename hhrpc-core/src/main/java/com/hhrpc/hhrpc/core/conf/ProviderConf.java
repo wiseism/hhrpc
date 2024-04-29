@@ -19,7 +19,7 @@ import org.springframework.core.annotation.Order;
  * @Author lifei
  */
 @Configuration
-@Import({ProviderGrayConf.class, SpringBootTransport.class, AppParametersConf.class})
+@Import({ProviderBusConf.class, SpringBootTransport.class, AppParametersConf.class})
 public class ProviderConf {
 
     @Value("${server.port:8081}")
@@ -32,14 +32,14 @@ public class ProviderConf {
     private String zkRoot;
 
     @Resource
-    private ProviderGrayConf providerGrayConf;
+    private ProviderBusConf providerBusConf;
 
     @Resource
     private AppParametersConf appParametersConf;
 
     @Bean
     public ProviderBootStarp providerBootStarp() {
-        return new ProviderBootStarp(port, providerGrayConf, appParametersConf);
+        return new ProviderBootStarp(port, providerBusConf, appParametersConf);
     }
 
     @Bean(initMethod = "start")

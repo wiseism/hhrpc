@@ -12,7 +12,7 @@ import java.util.Map;
  */
 @Configuration
 @ConfigurationProperties(prefix = "hhrpc.provider")
-public class ProviderGrayConf {
+public class ProviderBusConf {
 
     private Map<String, String> metas = Maps.newHashMap();
 

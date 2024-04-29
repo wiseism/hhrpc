@@ -1,6 +1,6 @@
 package com.hhrpc.hhrpc.demo.provider;
 
-import com.hhrpc.hhrpc.core.conf.ProviderGrayConf;
+import com.hhrpc.hhrpc.core.conf.ProviderBusConf;
 import jakarta.annotation.Resource;
 import org.apache.curator.test.TestingServer;
 import org.junit.AfterClass;
@@ -23,7 +23,7 @@ public class ProviderGrayRouterConfTest {
     private static TestingServer testingServer;
 
     @Resource
-    private ProviderGrayConf providerGrayConf;
+    private ProviderBusConf providerBusConf;
 
     @BeforeClass
     public static void init() {
@@ -36,7 +36,7 @@ public class ProviderGrayRouterConfTest {
 
     @Test
     public void test01() {
-        System.out.println(providerGrayConf.getMetas());
+        System.out.println(providerBusConf.getMetas());
     }
 
     @AfterClass
