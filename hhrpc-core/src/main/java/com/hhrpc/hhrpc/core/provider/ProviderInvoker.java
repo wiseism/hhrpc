@@ -2,6 +2,7 @@ package com.hhrpc.hhrpc.core.provider;
 
 import com.google.common.collect.Maps;
 import com.hhrpc.hhrpc.core.api.*;
+import com.hhrpc.hhrpc.core.conf.ProviderBusConf;
 import com.hhrpc.hhrpc.core.governance.SlidingTimeWindow;
 import com.hhrpc.hhrpc.core.meta.ProviderMeta;
 import com.hhrpc.hhrpc.core.utils.TypeUtils;
@@ -22,14 +23,16 @@ public class ProviderInvoker {
 
     private static final Map<String, SlidingTimeWindow> windows = Maps.newHashMap();
 
-    private final int trafficControl;
-    private final int limitWindow;
+//    private final int trafficControl;
+    private final ProviderBusConf providerBusConf;
+//    private final int limitWindow;
 
     public ProviderInvoker(ProviderBootStarp providerBootStarp) {
         this.serviceMap = providerBootStarp.getServiceMap();
-        Map<String, String> metas = providerBootStarp.getProviderBusConf().getMetas();
-        this.trafficControl = Integer.parseInt(metas.getOrDefault("tc", "20"));
-        this.limitWindow = Integer.parseInt(metas.getOrDefault("limitWindow", "30"));
+//        Map<String, String> metas = providerBootStarp.getProviderBusConf().getMetas();
+//        this.trafficControl = Integer.parseInt(metas.getOrDefault("tc", "20"));
+        this.providerBusConf = providerBootStarp.getProviderBusConf();
+//        this.limitWindow = Integer.parseInt(metas.getOrDefault("limitWindow", "30"));
     }
 
     public RpcResponse<Object> invokeMethod(RpcRequest rpcRequest) {
@@ -38,6 +41,8 @@ public class ProviderInvoker {
         try {
             // 流控
             synchronized (windows) {
+                int limitWindow = Integer.parseInt(providerBusConf.getMetas().getOrDefault("limitWindow", "30"));
+                int trafficControl = Integer.parseInt(providerBusConf.getMetas().getOrDefault("tc", "20"));
                 SlidingTimeWindow slidingTimeWindow = windows.computeIfAbsent(rpcRequest.getServiceName(), (k) -> new SlidingTimeWindow(limitWindow));
                 if (slidingTimeWindow.calcSum()>trafficControl) {
                     throw new HhRpcException("被限流了！");

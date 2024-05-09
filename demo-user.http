@@ -1,18 +1,22 @@
-POST http://localhost:8080/
+GET http://localhost:8082/findCf
+Accept: application/json
+
+###
+POST http://localhost:8082/hhrpc
 Content-Type: application/json
 
 {
   "serviceName": "com.hhrpc.hhrpc.demo.api.UserService",
-  "methodName": "findById",
+  "methodSign": "findById#java.lang.Integer",
   "args": [100]
 }
 
 ###
-POST http://localhost:8080/
+POST http://localhost:8082/hhrpc
 Content-Type: application/json
 
 {
   "serviceName": "com.hhrpc.hhrpc.demo.api.OrderService",
-  "methodName": "findById",
+  "methodSign": "findById#java.lang.Integer",
   "args": [500]
 }

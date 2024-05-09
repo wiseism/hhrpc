@@ -3,6 +3,7 @@ package com.hhrpc.hhrpc.demo.provider;
 import com.google.common.base.Strings;
 import com.hhrpc.hhrpc.core.api.RpcRequest;
 import com.hhrpc.hhrpc.core.api.RpcResponse;
+import com.hhrpc.hhrpc.core.conf.ProviderBusConf;
 import com.hhrpc.hhrpc.core.conf.ProviderConf;
 import com.hhrpc.hhrpc.core.provider.ProviderInvoker;
 import com.hhrpc.hhrpc.demo.api.UserService;
@@ -40,6 +41,14 @@ public class HhrpcDemoProviderApplication {
         return result;
     }
 
+    @Resource
+    private ProviderBusConf providerBusConf;
+
+    @RequestMapping(value = "/findCf")
+    public String findCf() {
+        return providerBusConf.getMetas().toString();
+    }
+
 
     @Bean
     public ApplicationRunner runTestDemo() {
@@ -48,15 +57,15 @@ public class HhrpcDemoProviderApplication {
         rpcRequest.setMethodSign("findById#java.lang.Integer");
         rpcRequest.setArgs(new Object[]{1});
         return args -> {
-            for (int i = 0; i < 100; i++) {
-                Thread.sleep(1000);
-                RpcResponse<Object> result = providerInvoker.invokeMethod(rpcRequest);
-                if (result.getStatus()) {
-                    System.out.println(Strings.lenientFormat("第%s次，请求成功：%s", i+1, result.getData()));
-                } else {
-                    System.out.println(Strings.lenientFormat("第%s次，请求失败，错误代码：%s", i+1, result.getErrorCode()));
-                }
-            }
+//            for (int i = 0; i < 100; i++) {
+//                Thread.sleep(1000);
+//                RpcResponse<Object> result = providerInvoker.invokeMethod(rpcRequest);
+//                if (result.getStatus()) {
+//                    System.out.println(Strings.lenientFormat("第%s次，请求成功：%s", i+1, result.getData()));
+//                } else {
+//                    System.out.println(Strings.lenientFormat("第%s次，请求失败，错误代码：%s", i+1, result.getErrorCode()));
+//                }
+//            }
         };
     }
 

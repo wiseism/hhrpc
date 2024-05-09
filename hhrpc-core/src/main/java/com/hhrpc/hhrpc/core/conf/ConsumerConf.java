@@ -112,4 +112,10 @@ public class ConsumerConf {
         rpcContext.getParameters().put("app.env", appParametersConf.getEnv());
         return rpcContext;
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ApolloChangeListener apolloChangeListener() {
+        return new ApolloChangeListener();
+    }
 }

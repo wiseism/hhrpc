@@ -60,4 +60,10 @@ public class ProviderConf {
     public ProviderInvoker providerInvoker(ProviderBootStarp providerBootStarp) {
         return new ProviderInvoker(providerBootStarp);
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ApolloChangeListener apolloChangeListener() {
+        return new ApolloChangeListener();
+    }
 }

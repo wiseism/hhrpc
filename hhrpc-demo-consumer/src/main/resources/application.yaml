@@ -28,3 +28,16 @@ logging:
   level:
     root: error
     com.hhrpc.hhrpc: debug
+
+app:
+  id: app01
+apollo:
+  cluster: default
+  cache-dir: /Users/lifei/Documents/workspace/hhprojects/apollo-quick-start/cachedata
+  meta: http://localhost:8080
+  autoUpdateInjectedSpringProperties: true
+  bootstrap:
+    enabled: true
+    namespaces: consumer,application
+    eagerLoad:
+      enabled: true
