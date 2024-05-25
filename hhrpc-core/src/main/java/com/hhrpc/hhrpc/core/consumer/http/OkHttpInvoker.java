@@ -1,13 +1,13 @@
 package com.hhrpc.hhrpc.core.consumer.http;
 
-import com.alibaba.fastjson.JSONObject;
+import static com.google.common.base.Preconditions.*;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.hhrpc.hhrpc.core.api.RpcRequest;
 import com.hhrpc.hhrpc.core.api.RpcResponse;
 import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
 import okhttp3.*;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpInvoker implements HttpInvoker {
 
     private final OkHttpClient client;
+
+    private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
 
     public OkHttpInvoker() {
         this(1_000L);
@@ -37,11 +39,43 @@ public class OkHttpInvoker implements HttpInvoker {
             String requestData = gson.toJson(request);
             Response response = client.newCall(new Request.Builder()
                     .url(url)
-                    .post(RequestBody.create(requestData, MediaType.get("application/json; charset=utf-8")))
+                    .post(RequestBody.create(requestData, MEDIA_TYPE_JSON))
                     .build()).execute();
             String resultJson = response.body().string();
             return gson.fromJson(resultJson, RpcResponse.class);
 //            return JSONObject.parseObject(resultJson, RpcResponse.class);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String get(String url) {
+        Request request = new Request.Builder().url(url).get().build();
+        try (Response response = client.newCall(request).execute()){
+            checkState(response.isSuccessful(), "Unexpected code " + response);
+            ResponseBody body = response.body();
+            if (Objects.nonNull(body)) {
+                return body.string();
+            }
+            return null;
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+    @Override
+    public String post(String url, String requestBody) {
+        Request request = new Request.Builder().url(url).post(RequestBody.create(requestBody, MEDIA_TYPE_JSON)).build();
+        try (Response response = client.newCall(request).execute()){
+            checkState(response.isSuccessful(), "Unexpected code " + response);
+            ResponseBody body = response.body();
+            if (Objects.nonNull(body)) {
+                return body.string();
+            }
+            return null;
         }catch (Exception e) {
             throw new RuntimeException(e);
         }

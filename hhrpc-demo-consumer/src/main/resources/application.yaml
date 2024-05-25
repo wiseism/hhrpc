@@ -41,3 +41,7 @@ apollo:
     namespaces: consumer,application
     eagerLoad:
       enabled: true
+
+
+hhregister:
+  servers: http://localhost:8383

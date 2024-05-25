@@ -29,3 +29,10 @@ apollo:
     namespaces: provider,application
     eagerLoad:
       enabled: true
+
+hhregister:
+  servers: http://localhost:8383
+logging:
+  level:
+    root: error
+    com.hhrpc.hhrpc.core.register: debug

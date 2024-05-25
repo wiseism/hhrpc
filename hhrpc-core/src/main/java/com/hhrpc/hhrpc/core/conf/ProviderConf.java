@@ -3,6 +3,7 @@ package com.hhrpc.hhrpc.core.conf;
 import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.provider.ProviderBootStarp;
 import com.hhrpc.hhrpc.core.provider.ProviderInvoker;
+import com.hhrpc.hhrpc.core.register.HhRegsiterCenter;
 import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
 import com.hhrpc.hhrpc.core.transport.SpringBootTransport;
 import jakarta.annotation.Resource;
@@ -45,7 +46,8 @@ public class ProviderConf {
     @Bean(initMethod = "start")
     @ConditionalOnMissingBean
     public RegisterCenter registerCenter() {
-        return new ZkRegisterCenter(zkServers, zkRoot);
+//        return new ZkRegisterCenter(zkServers, zkRoot);
+        return new HhRegsiterCenter();
     }
 
     @Bean

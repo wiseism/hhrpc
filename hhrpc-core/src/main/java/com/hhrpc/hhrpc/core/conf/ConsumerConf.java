@@ -8,6 +8,7 @@ import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
 import com.hhrpc.hhrpc.core.consumer.http.OkHttpInvoker;
 import com.hhrpc.hhrpc.core.filter.ParameterFilter;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
+import com.hhrpc.hhrpc.core.register.HhRegsiterCenter;
 import com.hhrpc.hhrpc.core.register.ZkRegisterCenter;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +68,8 @@ public class ConsumerConf {
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnMissingBean
     public RegisterCenter registerCenter() {
-       return new ZkRegisterCenter(zkServers, zkRoot);
+//       return new ZkRegisterCenter(zkServers, zkRoot);
+        return new HhRegsiterCenter();
     }
 
 
