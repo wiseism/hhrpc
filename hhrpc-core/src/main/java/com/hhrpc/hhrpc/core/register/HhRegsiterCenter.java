@@ -10,7 +10,6 @@ import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.meta.ServiceMeta;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -41,45 +37,32 @@ public class HhRegsiterCenter implements RegisterCenter {
 
     @Value("${hhregister.servers}")
     private String registerServer;
-    private final ScheduledExecutorService consumerExecutor = Executors.newSingleThreadScheduledExecutor();
-    private final ScheduledExecutorService providerExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    private final HhHealthChecker healthChecker = new HhHealthChecker();
     private final Map<String, Long> VERSIONS = Maps.newHashMap();
     private final MultiValueMap<InstanceMeta, ServiceMeta> INSTANCES = new LinkedMultiValueMap<>();
 
     @Override
     public void start() {
         log.debug("===> [hhregister] start...");
-        providerExecutor.scheduleWithFixedDelay(()->{
-            try {
-                log.debug("===> [hhregister] renew provider status....");
-                INSTANCES.keySet().parallelStream().forEach(instance->{
-                    String url = renewsPath(INSTANCES.get(instance));
-                    Long timestamp = HttpInvoker.httpPost(url, new Gson().toJson(instance), Long.class);
-                    log.debug("===> [hhregister] timestamp {}, instance{}", timestamp, instance);
-                });
-            }catch (Exception e){
-                log.error("===> [hhregister] renews status error", e);
-            }
-        }, 5, 5, TimeUnit.SECONDS);
+        healthChecker.start();
+        providerHealthCheck();
+    }
+
+    private void providerHealthCheck() {
+        healthChecker.providerHealthCheck(()->{
+            log.debug("===> [hhregister] renew provider status....");
+            INSTANCES.keySet().parallelStream().forEach(instance->{
+                Long timestamp = HttpInvoker.httpPost(renewsPath(INSTANCES.get(instance)), new Gson().toJson(instance), Long.class);
+                log.debug("===> [hhregister] timestamp {}, instance{}", timestamp, instance);
+            });
+        });
     }
 
     @Override
     public void stop() {
         log.debug("===> [hhregister] stop...");
-        gracefulShutdown(consumerExecutor);
-        gracefulShutdown(providerExecutor);
-    }
-
-    private void gracefulShutdown(ScheduledExecutorService executor) {
-        executor.shutdown();
-        try {
-            executor.awaitTermination(1000, TimeUnit.MILLISECONDS);
-            if (!executor.isTerminated()) {
-                executor.shutdownNow();
-            }
-        }catch (Exception e){
-            // ignore
-        }
+        healthChecker.stop();
     }
 
     @Override
@@ -109,34 +92,31 @@ public class HhRegsiterCenter implements RegisterCenter {
     @Override
     public List<InstanceMeta> findAll(ServiceMeta serviceMeta) {
         log.debug("===> [hhregister] findAll service: {}", serviceMeta);
-        String url = findAllPath(serviceMeta);
         TypeToken<List<InstanceMeta>> typeToken = new TypeToken<>() {};
-        List<InstanceMeta> instanceList = HttpInvoker.httpGet(url, typeToken);
+        List<InstanceMeta> instanceList = HttpInvoker.httpGet(findAllPath(serviceMeta), typeToken);
         log.debug("===> [hhregister] findAll service {}, instanceList: {}", serviceMeta, instanceList);
         return instanceList;
     }
 
     @Override
     public void subscribe(ServiceMeta serviceMeta, EventListener eventListener) {
-        consumerExecutor.scheduleWithFixedDelay(()->{
-            try {
-                // 获取旧的版本号
-                Long oldVersion = VERSIONS.getOrDefault(serviceMeta.toPath(), -1L);
-                // 获取新的版本号
-                String url = versionPath(serviceMeta);
-                Long newVersion = HttpInvoker.httpGet(url, Long.class);
-                log.debug("===> [hhregister] subscribe oldVersion: {}, newVersion: {}", oldVersion, newVersion);
-                if (Optional.ofNullable(newVersion).orElse(-1L) > oldVersion) {
-                    List<InstanceMeta> instanceList = findAll(serviceMeta);
-                    log.debug("===> [hhregister] subscribe *****refresh***** instanceList: {}", instanceList);
-                    eventListener.fire(new Event(instanceList));
-                    VERSIONS.put(serviceMeta.toPath(), newVersion);
-                }
-                // 对比版本号
-            }catch (Exception e) {
-                log.error("===> [hhregister] subscribe error", e);
+        consumerHealthCheck(serviceMeta, eventListener);
+    }
+
+    private void consumerHealthCheck(ServiceMeta serviceMeta, EventListener eventListener) {
+        healthChecker.consumerHealthCheck(()->{
+            // 获取旧的版本号
+            Long oldVersion = VERSIONS.getOrDefault(serviceMeta.toPath(), -1L);
+            // 获取新的版本号
+            Long newVersion = HttpInvoker.httpGet(versionPath(serviceMeta), Long.class);
+            log.debug("===> [hhregister] subscribe oldVersion: {}, newVersion: {}", oldVersion, newVersion);
+            if (Optional.ofNullable(newVersion).orElse(-1L) > oldVersion) {
+                List<InstanceMeta> instanceList = findAll(serviceMeta);
+                log.debug("===> [hhregister] subscribe *****refresh***** instanceList: {}", instanceList);
+                eventListener.fire(new Event(instanceList));
+                VERSIONS.put(serviceMeta.toPath(), newVersion);
             }
-        }, 10L, 1000L, TimeUnit.MILLISECONDS);
+        });
     }
 
     private String renewsPath(List<ServiceMeta> serviceMetaList) {
