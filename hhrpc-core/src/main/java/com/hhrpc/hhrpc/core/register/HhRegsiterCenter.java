@@ -10,6 +10,7 @@ import com.hhrpc.hhrpc.core.api.RegisterCenter;
 import com.hhrpc.hhrpc.core.consumer.HttpInvoker;
 import com.hhrpc.hhrpc.core.meta.InstanceMeta;
 import com.hhrpc.hhrpc.core.meta.ServiceMeta;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,11 @@ import java.util.stream.Collectors;
 public class HhRegsiterCenter implements RegisterCenter {
 
     private static final Logger log = LoggerFactory.getLogger(HhRegsiterCenter.class);
+    private static final String RENEWS_PATH = "renews";
+    private static final String REGISTER_PATH = "register";
+    private static final String UNREGISTER_PATH = "unregister";
+    private static final String FIND_ALL_PATH = "findAllInstances";
+    private static final String VERSION_PATH = "version";
 
     @Value("${hhregister.servers}")
     private String registerServer;
@@ -47,10 +53,9 @@ public class HhRegsiterCenter implements RegisterCenter {
             try {
                 log.debug("===> [hhregister] renew provider status....");
                 INSTANCES.keySet().parallelStream().forEach(instance->{
-                    String servers = INSTANCES.get(instance).stream().map(ServiceMeta::toPath).collect(Collectors.joining(","));
-                    String url = Strings.lenientFormat("%s/hhregistryController/renews?servers=%s", registerServer, servers);
+                    String url = renewsPath(INSTANCES.get(instance));
                     Long timestamp = HttpInvoker.httpPost(url, new Gson().toJson(instance), Long.class);
-                    log.debug("===> [hhregister] timestamp {}, instance{}, servers: {}", timestamp, instance, servers);
+                    log.debug("===> [hhregister] timestamp {}, instance{}", timestamp, instance);
                 });
             }catch (Exception e){
                 log.error("===> [hhregister] renews status error", e);
@@ -80,7 +85,7 @@ public class HhRegsiterCenter implements RegisterCenter {
     @Override
     public void register(ServiceMeta serviceMeta, InstanceMeta instanceMeta) {
         log.debug("===> [hhregister] register service {}, instance {}", serviceMeta, instanceMeta);
-        String url = Strings.lenientFormat("%s/hhregistryController/register?server=%s", registerServer, serviceMeta.toPath());
+        String url = registerPath(serviceMeta);
         InstanceMeta instance = HttpInvoker.httpPost(url, new Gson().toJson(instanceMeta), InstanceMeta.class);
         if (Objects.nonNull(instance)) {
             INSTANCES.add(instance, serviceMeta);
@@ -91,7 +96,7 @@ public class HhRegsiterCenter implements RegisterCenter {
     @Override
     public void unregister(ServiceMeta serviceMeta, InstanceMeta instanceMeta) {
         log.debug("===> [hhregister] unregister service {}, instance {}", serviceMeta, instanceMeta);
-        String url = Strings.lenientFormat("%s/hhregistryController/unregister?server=%s", registerServer, serviceMeta.toPath());
+        String url = unregisterPath(serviceMeta);
         InstanceMeta instance = HttpInvoker.httpPost(url, new Gson().toJson(instanceMeta), InstanceMeta.class);
         if (Objects.nonNull(instance)) {
             List<ServiceMeta> serverList = INSTANCES.get(instance);
@@ -104,7 +109,7 @@ public class HhRegsiterCenter implements RegisterCenter {
     @Override
     public List<InstanceMeta> findAll(ServiceMeta serviceMeta) {
         log.debug("===> [hhregister] findAll service: {}", serviceMeta);
-        String url = Strings.lenientFormat("%s/hhregistryController/findAllInstances?server=%s", registerServer, serviceMeta.toPath());
+        String url = findAllPath(serviceMeta);
         TypeToken<List<InstanceMeta>> typeToken = new TypeToken<>() {};
         List<InstanceMeta> instanceList = HttpInvoker.httpGet(url, typeToken);
         log.debug("===> [hhregister] findAll service {}, instanceList: {}", serviceMeta, instanceList);
@@ -118,7 +123,7 @@ public class HhRegsiterCenter implements RegisterCenter {
                 // 获取旧的版本号
                 Long oldVersion = VERSIONS.getOrDefault(serviceMeta.toPath(), -1L);
                 // 获取新的版本号
-                String url = Strings.lenientFormat("%s/hhregistryController/version?server=%s", registerServer, serviceMeta.toPath());
+                String url = versionPath(serviceMeta);
                 Long newVersion = HttpInvoker.httpGet(url, Long.class);
                 log.debug("===> [hhregister] subscribe oldVersion: {}, newVersion: {}", oldVersion, newVersion);
                 if (Optional.ofNullable(newVersion).orElse(-1L) > oldVersion) {
@@ -132,5 +137,34 @@ public class HhRegsiterCenter implements RegisterCenter {
                 log.error("===> [hhregister] subscribe error", e);
             }
         }, 10L, 1000L, TimeUnit.MILLISECONDS);
+    }
+
+    private String renewsPath(List<ServiceMeta> serviceMetaList) {
+        return path(RENEWS_PATH, serviceMetaList);
+    }
+
+    private String registerPath(ServiceMeta serviceMeta) {
+        return path(REGISTER_PATH, serviceMeta);
+    }
+
+    private String unregisterPath(ServiceMeta serviceMeta) {
+        return path(UNREGISTER_PATH, serviceMeta);
+    }
+
+    private String findAllPath(ServiceMeta serviceMeta) {
+        return path(FIND_ALL_PATH, serviceMeta);
+    }
+
+    private String versionPath(ServiceMeta serviceMeta) {
+        return path(VERSION_PATH, serviceMeta);
+    }
+
+    private String path(String context, ServiceMeta serviceMeta) {
+        return Strings.lenientFormat("%s/hhregistryController/%s?server=%s", registerServer, context, serviceMeta.toPath());
+    }
+
+    private String path(String context, List<ServiceMeta> serviceMetaList) {
+        String servers = serviceMetaList.stream().map(ServiceMeta::toPath).collect(Collectors.joining(","));
+        return Strings.lenientFormat("%s/hhregistryController/%s?servers=%s", registerServer, context, servers);
     }
 }
