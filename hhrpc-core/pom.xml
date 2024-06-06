@@ -22,6 +22,7 @@
         <java.version>17</java.version>
         <apollo-client.version>2.2.0</apollo-client.version>
         <spring-cloud-context.version>4.1.2</spring-cloud-context.version>
+        <hhconfig-client.version>0.0.1-SNAPSHOT</hhconfig-client.version>
     </properties>
     <dependencies>
         <dependency>
@@ -100,6 +101,17 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-context</artifactId>
             <version>${spring-cloud-context.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.gitee.hefren</groupId>
+            <artifactId>hhconfig-client</artifactId>
+            <version>${hhconfig-client.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-context</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

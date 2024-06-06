@@ -1,12 +1,12 @@
 package com.hhrpc.hhrpc.demo.provider;
 
-import com.google.common.base.Strings;
 import com.hhrpc.hhrpc.core.api.RpcRequest;
 import com.hhrpc.hhrpc.core.api.RpcResponse;
 import com.hhrpc.hhrpc.core.conf.ProviderBusConf;
 import com.hhrpc.hhrpc.core.conf.ProviderConf;
 import com.hhrpc.hhrpc.core.provider.ProviderInvoker;
 import com.hhrpc.hhrpc.demo.api.UserService;
+import io.gitee.hefren.hhconfig.client.annnotation.EnableHhConfigAnnotation;
 import jakarta.annotation.Resource;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @SpringBootApplication
+@EnableHhConfigAnnotation
 @Import(ProviderConf.class)
 public class HhrpcDemoProviderApplication {
 
