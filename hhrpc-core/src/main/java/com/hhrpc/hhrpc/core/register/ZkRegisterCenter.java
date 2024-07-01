@@ -1,6 +1,7 @@
 package com.hhrpc.hhrpc.core.register;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hhrpc.hhrpc.core.api.Event;
@@ -33,7 +34,7 @@ public class ZkRegisterCenter implements RegisterCenter {
     private static final Logger log = LoggerFactory.getLogger(ZkRegisterCenter.class);
 
     private CuratorFramework client;
-    private TreeCache treeCache;
+    private List<TreeCache> treeCacheList = Lists.newArrayList();
 
     private final String zkServers;
     private final String zkRoot;
@@ -59,8 +60,8 @@ public class ZkRegisterCenter implements RegisterCenter {
     @Override
     public void stop() {
         log.info("===> stop zk");
-        if (Objects.nonNull(treeCache)) {
-            treeCache.close();
+        if (Objects.nonNull(treeCacheList) ) {
+            treeCacheList.forEach(TreeCache::close);
         }
         this.client.close();
     }
@@ -138,7 +139,7 @@ public class ZkRegisterCenter implements RegisterCenter {
     public void subscribe(ServiceMeta serviceMeta, EventListener eventListener) {
         try {
             String servicePath = Strings.lenientFormat("/%s", serviceMeta.toPath());
-            treeCache = TreeCache.newBuilder(client, servicePath)
+            final TreeCache treeCache = TreeCache.newBuilder(client, servicePath)
                     .setCacheData(true)
                     .setMaxDepth(2)
                     .build();
@@ -148,6 +149,7 @@ public class ZkRegisterCenter implements RegisterCenter {
                     eventListener.fire(new Event(nodes));
                 });
             treeCache.start();
+            treeCacheList.add(treeCache);
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
